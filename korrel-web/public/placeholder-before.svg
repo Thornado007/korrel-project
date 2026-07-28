@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#c9c4bb"/>
+  <rect width="800" height="600" fill="url(#noise)" opacity="0.15"/>
+  <defs>
+    <pattern id="noise" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#a89f8f"/>
+      <rect width="2" height="2" fill="#b8ae9d"/>
+    </pattern>
+  </defs>
+  <text x="50%" y="52%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="#6b6558" letter-spacing="2">RAW SCAN</text>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#e8e5df"/>
+  <rect x="60" y="60" width="680" height="480" fill="#f5f3ee" stroke="#d8d3c8" stroke-width="1"/>
+  <text x="50%" y="52%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="#3a362e" letter-spacing="2">RESTORED</text>
+</svg>
