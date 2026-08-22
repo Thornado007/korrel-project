@@ -152,7 +152,6 @@ export interface ServicePageData {
 export interface ScanningServiceData {
   _id: string;
   title: string;
-  beforeImage?: SanityImageValue;
-  afterImage?: SanityImageValue;
+  exampleScan?: SanityImageValue;
   body?: unknown[];
 }

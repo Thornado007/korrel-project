@@ -6,7 +6,7 @@ import {
   SCANNING_SERVICES_QUERY,
 } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
-import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
+import { LightboxTrigger } from "@/components/lightbox/LightboxTrigger";
 import type {
   ServicePageData,
   ScanningServiceData,
@@ -66,7 +66,7 @@ export default async function ServicePage() {
 
       {/* Optional intro text from the servicePage singleton */}
       {pageData?.body && pageData.body.length > 0 && (
-        <div className="prose-korrel mt-6 max-w-xl text-base leading-relaxed text-muted">
+        <div className="prose-korrel mt-6 max-w-xl text-base leading-relaxed text-foreground">
           <PortableText
             value={pageData.body as never}
             components={serviceBodyComponents}
@@ -76,49 +76,55 @@ export default async function ServicePage() {
 
       {/* Scanning services — two columns on md+, stacked on mobile */}
       {services.length > 0 && (
-        <div className="mt-16 grid grid-cols-1 gap-y-20 md:grid-cols-2 md:gap-x-12 md:gap-y-0">
+        <div className="mt-16 grid grid-cols-1 gap-10 md:grid-cols-2">
           {services.map((service) => {
-            const hasBefore = !!service.beforeImage?.asset;
-            const hasAfter = !!service.afterImage?.asset;
-            const hasComparison = hasBefore && hasAfter;
+            const scan = service.exampleScan;
+            const hasScan = !!scan?.asset;
 
-            const beforeSrc = hasBefore
-              ? urlFor(service.beforeImage!).width(1200).url()
-              : "";
-            const afterSrc = hasAfter
-              ? urlFor(service.afterImage!).width(1200).url()
-              : "";
-            const beforeBlur = service.beforeImage?.asset?.metadata?.lqip;
-            const afterBlur = service.afterImage?.asset?.metadata?.lqip;
+            const scanW = scan?.asset?.metadata?.dimensions?.width ?? 800;
+            const scanH = scan?.asset?.metadata?.dimensions?.height ?? 600;
+            const thumbWidth = 800;
+            const thumbHeight = Math.round((scanH / scanW) * thumbWidth);
 
             return (
-              <div key={service._id} className="flex flex-col">
-                <h2 className="text-lg font-medium tracking-tight">
-                  {service.title}
-                </h2>
-
-                {/* Before / After comparison slider */}
-                {hasComparison && (
-                  <div className="mt-6">
-                    <BeforeAfterSlider
-                      beforeSrc={beforeSrc}
-                      afterSrc={afterSrc}
-                      beforeBlurDataURL={beforeBlur}
-                      afterBlurDataURL={afterBlur}
-                      className="rounded-md"
+              <div
+                key={service._id}
+                className="flex flex-col rounded-lg border border-border"
+              >
+                {/* Example scan with lightbox */}
+                {hasScan && (
+                  <LightboxTrigger
+                    src={urlFor(scan!).width(2400).url()}
+                    fullSrc={scan!.asset!.url}
+                    title={service.title}
+                  >
+                    <Image
+                      src={urlFor(scan!).width(thumbWidth).url()}
+                      alt={`Example scan — ${service.title}`}
+                      width={thumbWidth}
+                      height={thumbHeight}
+                      className="w-full cursor-zoom-in rounded-t-lg"
+                      placeholder={scan!.asset!.metadata?.lqip ? "blur" : "empty"}
+                      blurDataURL={scan!.asset!.metadata?.lqip}
                     />
-                  </div>
+                  </LightboxTrigger>
                 )}
 
-                {/* Body content */}
-                {service.body && service.body.length > 0 && (
-                  <div className="prose-korrel mt-6 text-sm leading-relaxed text-muted">
-                    <PortableText
-                      value={service.body as never}
-                      components={serviceBodyComponents}
-                    />
-                  </div>
-                )}
+                {/* Text content */}
+                <div className="flex flex-1 flex-col p-6 sm:p-8">
+                  <h2 className="text-lg font-medium tracking-tight">
+                    {service.title}
+                  </h2>
+
+                  {service.body && service.body.length > 0 && (
+                    <div className="prose-korrel mt-4 text-sm leading-relaxed text-foreground">
+                      <PortableText
+                        value={service.body as never}
+                        components={serviceBodyComponents}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}

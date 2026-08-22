@@ -6,7 +6,7 @@ import {defineType, defineField, defineArrayMember} from 'sanity'
  *
  * Services are displayed side-by-side on the /services page on larger
  * screens and stacked on mobile. Each service can optionally include
- * before/after comparison images shown in a slider.
+ * an example scan image shown with lightbox support.
  */
 export const scanningService = defineType({
   name: 'scanningService',
@@ -28,18 +28,11 @@ export const scanningService = defineType({
       initialValue: 0,
     }),
     defineField({
-      name: 'beforeImage',
-      title: 'Before Image',
+      name: 'exampleScan',
+      title: 'Example Scan',
       type: 'image',
       options: {hotspot: true},
-      description: 'The "before" image for the comparison slider (optional).',
-    }),
-    defineField({
-      name: 'afterImage',
-      title: 'After Image',
-      type: 'image',
-      options: {hotspot: true},
-      description: 'The "after" image for the comparison slider (optional).',
+      description: 'An example scan produced by this service. Shown below the title with lightbox zoom support.',
     }),
     defineField({
       name: 'body',
@@ -106,7 +99,7 @@ export const scanningService = defineType({
     select: {
       title: 'title',
       subtitle: 'orderRank',
-      media: 'afterImage',
+      media: 'exampleScan',
     },
     prepare({title, subtitle, media}) {
       return {

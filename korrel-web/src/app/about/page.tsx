@@ -20,11 +20,11 @@ export default async function AboutPage() {
       <h1 className="text-3xl font-medium tracking-tight">{title}</h1>
 
       {hasBody ? (
-        <div className="prose-korrel mt-8 flex flex-col gap-5 text-base leading-relaxed text-muted">
+        <div className="prose-korrel mt-8 flex flex-col gap-5 text-base leading-relaxed text-foreground">
           <PortableText value={data!.body as never[]} />
         </div>
       ) : (
-        <div className="mt-8 flex flex-col gap-5 text-base leading-relaxed text-muted">
+        <div className="mt-8 flex flex-col gap-5 text-base leading-relaxed text-foreground">
           <p>
             Korrel began as a personal project to bring old, damaged photo
             scans back to life — restoring color, removing scratches, and

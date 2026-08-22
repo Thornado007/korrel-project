@@ -109,12 +109,7 @@ export const SERVICE_PAGE_QUERY = `*[_type == "servicePage"][0]{
 export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(orderRank asc, _createdAt asc){
   _id,
   title,
-  beforeImage{
-    ${IMAGE_ASSET_FRAGMENT},
-    hotspot,
-    crop
-  },
-  afterImage{
+  exampleScan{
     ${IMAGE_ASSET_FRAGMENT},
     hotspot,
     crop
