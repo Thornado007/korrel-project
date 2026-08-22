@@ -2,10 +2,11 @@ import {defineType, defineField, defineArrayMember} from 'sanity'
 
 /**
  * Scanning Service — one document per scanning service offering
- * (e.g. "Nikon Coolscan 5000", "GFX Camera Scanning").
+ * (e.g. "GFX Camera Scanning", "Nikon Coolscan 5000").
  *
  * Services are displayed side-by-side on the /services page on larger
- * screens and stacked on mobile.
+ * screens and stacked on mobile. Each service can optionally include
+ * before/after comparison images shown in a slider.
  */
 export const scanningService = defineType({
   name: 'scanningService',
@@ -25,6 +26,20 @@ export const scanningService = defineType({
       type: 'number',
       description: 'Lower numbers appear first on the page.',
       initialValue: 0,
+    }),
+    defineField({
+      name: 'beforeImage',
+      title: 'Before Image',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'The "before" image for the comparison slider (optional).',
+    }),
+    defineField({
+      name: 'afterImage',
+      title: 'After Image',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'The "after" image for the comparison slider (optional).',
     }),
     defineField({
       name: 'body',
@@ -91,11 +106,13 @@ export const scanningService = defineType({
     select: {
       title: 'title',
       subtitle: 'orderRank',
+      media: 'afterImage',
     },
-    prepare({title, subtitle}) {
+    prepare({title, subtitle, media}) {
       return {
         title: title || 'Scanning Service',
         subtitle: subtitle != null ? `Order: ${subtitle}` : undefined,
+        media,
       }
     },
   },
