@@ -58,7 +58,10 @@ export function useLightbox() {
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 8;
-const ZOOM_STEP_SCALE = 5;
+/** Each click of +/− multiplies or divides the scale by this factor. */
+const ZOOM_FACTOR = 1.5;
+/** Double-tap target zoom (moderate, not too aggressive). */
+const DOUBLE_TAP_SCALE = 2.5;
 
 interface PointerData {
   x: number;
@@ -198,6 +201,11 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
+      // Don't capture pointer events that originate from buttons (prev/next
+      // navigation) — capturing would swallow their click events.
+      const target = e.target as HTMLElement;
+      if (target.closest("button")) return;
+
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
       } catch {
@@ -279,11 +287,28 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
   const handleTap = useCallback(() => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      setScale((s) => (s > 1 ? 1 : ZOOM_STEP_SCALE));
+      setScale((s) => (s > 1 ? 1 : DOUBLE_TAP_SCALE));
       setTranslate({ x: 0, y: 0 });
     }
     lastTapRef.current = now;
   }, []);
+
+  const zoomIn = useCallback(() => {
+    setScale((s) => {
+      const next = Math.min(MAX_SCALE, s * ZOOM_FACTOR);
+      setTranslate((t) => clampTranslate(t, next));
+      return next;
+    });
+  }, [clampTranslate]);
+
+  const zoomOut = useCallback(() => {
+    setScale((s) => {
+      const next = Math.max(MIN_SCALE, s / ZOOM_FACTOR);
+      if (next <= 1) setTranslate({ x: 0, y: 0 });
+      else setTranslate((t) => clampTranslate(t, next));
+      return next;
+    });
+  }, [clampTranslate]);
 
   /* ---- imperative wheel zoom (non-passive, so preventDefault works) ---- */
 
@@ -420,21 +445,68 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
                 </button>
               )}
 
-              {/* Zoom toggle */}
+              {/* Zoom out (−) */}
               <button
                 type="button"
-                onClick={() => {
-                  setScale((s) => (s > 1 ? 1 : ZOOM_STEP_SCALE));
-                  setTranslate({ x: 0, y: 0 });
-                }}
-                aria-pressed={scale > 1}
-                aria-label={scale > 1 ? "Reset zoom" : "Zoom in"}
-                title={scale > 1 ? "Reset zoom" : "Zoom"}
-                className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
-                  scale > 1
-                    ? "bg-white text-black"
-                    : "text-white/80 hover:text-white"
-                }`}
+                onClick={zoomOut}
+                disabled={scale <= MIN_SCALE}
+                aria-label="Zoom out"
+                title="Zoom out"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-white/80 transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-white/80"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="8.5"
+                    cy="8.5"
+                    r="5.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M6.2 8.5h4.6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M13 13L17 17"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+
+              {/* Zoom level indicator / reset */}
+              {scale > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setScale(1);
+                    setTranslate({ x: 0, y: 0 });
+                  }}
+                  aria-label="Reset zoom"
+                  title="Reset zoom"
+                  className="flex h-11 items-center justify-center rounded-full px-2 text-xs tabular-nums text-white/70 transition-colors hover:text-white"
+                >
+                  {Math.round(scale * 100)}%
+                </button>
+              )}
+
+              {/* Zoom in (+) */}
+              <button
+                type="button"
+                onClick={zoomIn}
+                disabled={scale >= MAX_SCALE}
+                aria-label="Zoom in"
+                title="Zoom in"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-white/80 transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-white/80"
               >
                 <svg
                   width="20"
