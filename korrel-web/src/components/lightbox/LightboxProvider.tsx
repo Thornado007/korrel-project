@@ -39,6 +39,7 @@ export interface LightboxImage {
 
 interface LightboxContextValue {
   open: (image: LightboxImage) => void;
+  openGallery: (images: LightboxImage[], startIndex: number) => void;
 }
 
 const LightboxContext = createContext<LightboxContextValue | null>(null);
@@ -56,8 +57,8 @@ export function useLightbox() {
    ------------------------------------------------------------------ */
 
 const MIN_SCALE = 1;
-const MAX_SCALE = 4;
-const ZOOM_STEP_SCALE = 2.5;
+const MAX_SCALE = 8;
+const ZOOM_STEP_SCALE = 5;
 
 interface PointerData {
   x: number;
@@ -73,12 +74,18 @@ function distanceBetween(a: PointerData, b: PointerData) {
    ------------------------------------------------------------------ */
 
 export function LightboxProvider({ children }: { children: ReactNode }) {
-  const [image, setImage] = useState<LightboxImage | null>(null);
+  const [gallery, setGallery] = useState<LightboxImage[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [gestureActive, setGestureActive] = useState(false);
   const [fullResLoaded, setFullResLoaded] = useState(false);
+
+  const image = gallery.length > 0 ? (gallery[currentIndex] ?? null) : null;
+  const hasMultiple = gallery.length > 1;
+  const hasNext = currentIndex < gallery.length - 1;
+  const hasPrev = currentIndex > 0;
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -98,18 +105,32 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
   const scaleRef = useRef(scale);
   scaleRef.current = scale;
 
-  /* ---- open / close ---- */
+  /* ---- open / close / navigate ---- */
 
   const open = useCallback((next: LightboxImage) => {
-    setImage(next);
+    setGallery([next]);
+    setCurrentIndex(0);
     setInfoOpen(false);
     setScale(1);
     setTranslate({ x: 0, y: 0 });
     setFullResLoaded(false);
   }, []);
 
+  const openGallery = useCallback(
+    (images: LightboxImage[], startIndex: number) => {
+      setGallery(images);
+      setCurrentIndex(Math.min(startIndex, images.length - 1));
+      setInfoOpen(false);
+      setScale(1);
+      setTranslate({ x: 0, y: 0 });
+      setFullResLoaded(false);
+    },
+    []
+  );
+
   const close = useCallback(() => {
-    setImage(null);
+    setGallery([]);
+    setCurrentIndex(0);
     setInfoOpen(false);
     setScale(1);
     setTranslate({ x: 0, y: 0 });
@@ -119,11 +140,27 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
     setGestureActive(false);
   }, []);
 
+  const resetView = useCallback(() => {
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+    setFullResLoaded(false);
+    pointers.current.clear();
+    gesture.current = { mode: "none" };
+    setGestureActive(false);
+  }, []);
+
+  const goNext = useCallback(() => {
+    setCurrentIndex((i) => Math.min(i + 1, gallery.length - 1));
+    resetView();
+  }, [gallery.length, resetView]);
+
+  const goPrev = useCallback(() => {
+    setCurrentIndex((i) => Math.max(i - 1, 0));
+    resetView();
+  }, [resetView]);
+
   /* ---- full-resolution preloading ---- */
 
-  // When the user zooms past 1×, start loading the full-res image in
-  // the background. Once loaded it replaces the preview src so the user
-  // sees every pixel of the original scan.
   useEffect(() => {
     if (!image?.fullSrc || fullResLoaded || scale <= 1) return;
     const img = new window.Image();
@@ -275,6 +312,8 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
+      if (e.key === "ArrowRight" && hasNext) goNext();
+      if (e.key === "ArrowLeft" && hasPrev) goPrev();
     };
     document.addEventListener("keydown", onKeyDown);
     closeButtonRef.current?.focus();
@@ -296,7 +335,7 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
       document.body.style.right = right;
       window.scrollTo(0, scrollY);
     };
-  }, [image, close]);
+  }, [image, close, hasNext, hasPrev, goNext, goPrev]);
 
   /* ---- separate author tag from other tags ---- */
 
@@ -328,7 +367,10 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
     return Array.from(groups.values());
   }, [detailTags]);
 
-  const contextValue = useMemo(() => ({ open }), [open]);
+  const contextValue = useMemo(
+    () => ({ open, openGallery }),
+    [open, openGallery]
+  );
 
   /* ---- render ---- */
 
@@ -463,6 +505,64 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
             onPointerCancel={endPointer}
             onPointerLeave={endPointer}
           >
+            {/* Previous button */}
+            {hasMultiple && hasPrev && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goPrev();
+                }}
+                aria-label="Previous image"
+                className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white/80 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white sm:left-4 sm:h-12 sm:w-12"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 4L6 10l6 6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {/* Next button */}
+            {hasMultiple && hasNext && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goNext();
+                }}
+                aria-label="Next image"
+                className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white/80 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white sm:right-4 sm:h-12 sm:w-12"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8 4l6 6-6 6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
+
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               ref={imgRef}
@@ -480,6 +580,30 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
                 willChange: "transform",
               }}
             />
+
+            {/* Full-resolution loading indicator */}
+            {scale > 1 && (
+              <div className="absolute bottom-3 right-3 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-xs backdrop-blur-sm sm:bottom-6 sm:right-6">
+                {fullResLoaded ? (
+                  <>
+                    <span className="h-2 w-2 rounded-full bg-green-400" />
+                    <span className="text-white/80">Full resolution</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="animate-res-pulse h-2 w-2 rounded-full bg-amber-400" />
+                    <span className="text-white/80">Loading…</span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Image counter */}
+            {hasMultiple && (
+              <span className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs tabular-nums text-white/70 backdrop-blur-sm sm:bottom-6">
+                {currentIndex + 1} / {gallery.length}
+              </span>
+            )}
           </div>
 
           {/* ---- Info panel (expandable) ---- */}

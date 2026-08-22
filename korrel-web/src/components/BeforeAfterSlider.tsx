@@ -55,18 +55,28 @@ export function BeforeAfterSlider({
     });
   }, []);
 
-  const onPointerDown = (e: React.PointerEvent) => {
+  /* ---- Handle-only pointer events ----
+     Only the slider handle initiates dragging. setPointerCapture ensures
+     that once dragging starts, the handle tracks the pointer even when it
+     moves outside the handle area. The rest of the container allows
+     normal touch scrolling. */
+
+  const onHandlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
     dragging.current = true;
-    (e.target as Element).setPointerCapture(e.pointerId);
-    updateFromClientX(e.clientX);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
   };
 
-  const onPointerMove = (e: React.PointerEvent) => {
+  const onHandlePointerMove = (e: React.PointerEvent) => {
     if (!dragging.current) return;
     updateFromClientX(e.clientX);
   };
 
-  const onPointerUp = () => {
+  const onHandlePointerUp = () => {
     dragging.current = false;
   };
 
@@ -75,13 +85,9 @@ export function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className={`relative aspect-4/3 w-full touch-none select-none overflow-hidden bg-[#f2f0ec] sm:aspect-16/10 ${
+      className={`relative aspect-4/3 w-full select-none overflow-hidden bg-[#f2f0ec] sm:aspect-16/10 ${
         className ?? ""
       }`}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerLeave={onPointerUp}
     >
       {/* After image (base layer, full size) */}
       <Image
@@ -120,11 +126,19 @@ export function BeforeAfterSlider({
         />
       </div>
 
-      {/* Divider line + handle */}
+      {/* Interactive handle zone — wider touch target, only this area
+          captures drag events so normal scrolling works elsewhere */}
       <div
-        className="absolute inset-y-0 w-px bg-white"
-        style={{ left: `${position}%` }}
+        className="absolute inset-y-0 z-10 cursor-ew-resize touch-none"
+        style={{ left: `calc(${position}% - 22px)`, width: "44px" }}
+        onPointerDown={onHandlePointerDown}
+        onPointerMove={onHandlePointerMove}
+        onPointerUp={onHandlePointerUp}
+        onPointerCancel={onHandlePointerUp}
       >
+        {/* Visual divider line */}
+        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white" />
+        {/* Circular handle */}
         <div className="absolute top-1/2 left-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm">
           <span className="text-xs text-black/50">↔</span>
         </div>

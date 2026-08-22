@@ -97,6 +97,7 @@ export interface WikiInlineImage extends SanityImageValue {
 export interface ComparisonImageItem extends SanityImageValue {
   _key: string;
   label?: string;
+  tags?: Tag[];
 }
 
 /** An image-comparison block inside a Wiki article's Portable Text body. */
@@ -122,8 +123,16 @@ export interface HomePageData {
   heroDescription?: string;
   beforeImage?: SanityImageValue;
   afterImage?: SanityImageValue;
-  aboutTitle?: string;
-  aboutBody?: unknown[];
+}
+
+/* ------------------------------------------------------------------
+   About Page (singleton)
+   ------------------------------------------------------------------ */
+
+export interface AboutPageData {
+  _id: string;
+  title?: string;
+  body?: unknown[];
 }
 
 /* ------------------------------------------------------------------
@@ -133,5 +142,15 @@ export interface HomePageData {
 export interface ServicePageData {
   _id: string;
   title?: string;
+  body?: unknown[];
+}
+
+/* ------------------------------------------------------------------
+   Scanning Service
+   ------------------------------------------------------------------ */
+
+export interface ScanningServiceData {
+  _id: string;
+  title: string;
   body?: unknown[];
 }

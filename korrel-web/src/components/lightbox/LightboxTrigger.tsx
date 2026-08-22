@@ -1,7 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useLightbox, type LightboxTag } from "./LightboxProvider";
+import {
+  useLightbox,
+  type LightboxImage,
+  type LightboxTag,
+} from "./LightboxProvider";
 
 interface LightboxTriggerProps {
   /** Good-quality preview URL shown immediately when the lightbox opens. */
@@ -11,6 +15,10 @@ interface LightboxTriggerProps {
   alt?: string;
   title?: string;
   tags?: LightboxTag[];
+  /** When provided together with galleryIndex, enables prev/next in lightbox. */
+  galleryImages?: LightboxImage[];
+  /** This image's index in the gallery array. */
+  galleryIndex?: number;
   className?: string;
   children: ReactNode;
 }
@@ -18,6 +26,9 @@ interface LightboxTriggerProps {
 /**
  * Wraps any content (usually an <Image>) in a button that opens the
  * lightbox when clicked/tapped.
+ *
+ * When `galleryImages` + `galleryIndex` are provided the lightbox opens
+ * in gallery mode with prev/next navigation.
  *
  * `touch-action: manipulation` eliminates the 300 ms tap delay on
  * mobile browsers that still observe it, ensuring the lightbox opens
@@ -29,15 +40,23 @@ export function LightboxTrigger({
   alt = "",
   title,
   tags,
+  galleryImages,
+  galleryIndex,
   className,
   children,
 }: LightboxTriggerProps) {
-  const { open } = useLightbox();
+  const { open, openGallery } = useLightbox();
 
   return (
     <button
       type="button"
-      onClick={() => open({ src, fullSrc, alt, title, tags })}
+      onClick={() => {
+        if (galleryImages && galleryIndex !== undefined) {
+          openGallery(galleryImages, galleryIndex);
+        } else {
+          open({ src, fullSrc, alt, title, tags });
+        }
+      }}
       className={`touch-manipulation ${className ?? ""}`}
       aria-label={alt ? `View "${alt}" full size` : "View image full size"}
     >

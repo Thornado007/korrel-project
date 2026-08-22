@@ -153,6 +153,15 @@ export const wikiArticle = defineType({
                       type: 'string',
                       description: 'Short label, e.g. "Before", "After", or a lens name.',
                     }),
+                    defineField({
+                      name: 'tags',
+                      title: 'Tags',
+                      description:
+                        'Technical tags for this comparison image (e.g. lens, film stock).',
+                      type: 'array',
+                      of: [defineArrayMember({type: 'reference', to: [{type: 'tag'}]})],
+                      options: {layout: 'tags'},
+                    }),
                   ],
                 }),
               ],

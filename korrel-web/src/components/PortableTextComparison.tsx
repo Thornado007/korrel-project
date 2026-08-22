@@ -10,14 +10,22 @@ import type { ComparisonImageItem, ImageComparison } from "@/sanity/types";
    ------------------------------------------------------------------ */
 
 const DISPLAY_WIDTH = 1200;
-const SIZES = "(min-width: 768px) 640px, 100vw";
+const SIZES = "(min-width: 768px) 720px, 100vw";
 
 function imgSrc(img: ComparisonImageItem, width = DISPLAY_WIDTH) {
   return urlFor(img).width(width).url();
 }
 
+/** Derive the CSS aspect-ratio from the first image's dimensions. */
+function aspectFrom(img: ComparisonImageItem): string {
+  const w = img.asset?.metadata?.dimensions?.width;
+  const h = img.asset?.metadata?.dimensions?.height;
+  if (w && h) return `${w} / ${h}`;
+  return "4 / 3"; // fallback
+}
+
 /* ------------------------------------------------------------------
-   Slider — drag/touch to reveal one image over the other
+   Slider — drag the handle to reveal one image over the other
    ------------------------------------------------------------------ */
 
 function ComparisonSlider({
@@ -47,22 +55,24 @@ function ComparisonSlider({
     });
   };
 
-  const onPointerDown = (e: React.PointerEvent) => {
+  /* Handle-only pointer events — only the slider handle initiates
+     dragging so normal touch scrolling works on the image itself. */
+  const onHandlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
     dragging.current = true;
     try {
-      (e.currentTarget as Element).setPointerCapture(e.pointerId);
+      e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
       /* ignore */
     }
-    updateFromClientX(e.clientX);
   };
 
-  const onPointerMove = (e: React.PointerEvent) => {
+  const onHandlePointerMove = (e: React.PointerEvent) => {
     if (!dragging.current) return;
     updateFromClientX(e.clientX);
   };
 
-  const onPointerUp = () => {
+  const onHandlePointerUp = () => {
     dragging.current = false;
   };
 
@@ -70,12 +80,8 @@ function ComparisonSlider({
     <figure className="my-8">
       <div
         ref={containerRef}
-        className="relative aspect-[4/3] w-full touch-none select-none overflow-hidden bg-[#f2f0ec]"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-        onPointerCancel={onPointerUp}
+        className="relative w-full select-none overflow-hidden bg-[#f2f0ec]"
+        style={{ aspectRatio: aspectFrom(imgA) }}
       >
         {/* Image B (full, base layer) */}
         <Image
@@ -84,7 +90,7 @@ function ComparisonSlider({
           fill
           sizes={SIZES}
           draggable={false}
-          className="object-cover"
+          className="object-contain"
           placeholder={imgB.asset.metadata?.lqip ? "blur" : "empty"}
           blurDataURL={imgB.asset.metadata?.lqip}
         />
@@ -100,17 +106,24 @@ function ComparisonSlider({
             fill
             sizes={SIZES}
             draggable={false}
-            className="object-cover"
+            className="object-contain"
             placeholder={imgA.asset.metadata?.lqip ? "blur" : "empty"}
             blurDataURL={imgA.asset.metadata?.lqip}
           />
         </div>
 
-        {/* Divider line + handle */}
+        {/* Interactive handle zone */}
         <div
-          className="absolute inset-y-0 w-px bg-white/80"
-          style={{ left: `${position}%` }}
+          className="absolute inset-y-0 z-10 cursor-ew-resize touch-none"
+          style={{ left: `calc(${position}% - 22px)`, width: "44px" }}
+          onPointerDown={onHandlePointerDown}
+          onPointerMove={onHandlePointerMove}
+          onPointerUp={onHandlePointerUp}
+          onPointerCancel={onHandlePointerUp}
         >
+          {/* Visual divider line */}
+          <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/80" />
+          {/* Circular handle */}
           <div className="absolute top-1/2 left-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm">
             <svg
               width="14"
@@ -160,7 +173,7 @@ function ComparisonSlider({
 }
 
 /* ------------------------------------------------------------------
-   Overlay — click anywhere on the image to toggle between two images
+   Overlay — tab buttons to switch between images (clear which is active)
    ------------------------------------------------------------------ */
 
 function ComparisonOverlay({
@@ -179,7 +192,8 @@ function ComparisonOverlay({
   return (
     <figure className="my-8">
       <div
-        className="relative aspect-[4/3] w-full cursor-pointer select-none overflow-hidden bg-[#f2f0ec]"
+        className="relative w-full cursor-pointer select-none overflow-hidden bg-[#f2f0ec]"
+        style={{ aspectRatio: aspectFrom(imgA) }}
         onClick={() => setActiveIndex((i) => (i === 0 ? 1 : 0))}
         role="button"
         tabIndex={0}
@@ -197,7 +211,7 @@ function ComparisonOverlay({
           fill
           sizes={SIZES}
           draggable={false}
-          className={`object-cover transition-opacity duration-200 ${
+          className={`object-contain transition-opacity duration-200 ${
             activeIndex === 0 ? "opacity-100" : "opacity-0"
           }`}
           placeholder={imgA.asset.metadata?.lqip ? "blur" : "empty"}
@@ -209,17 +223,36 @@ function ComparisonOverlay({
           fill
           sizes={SIZES}
           draggable={false}
-          className={`object-cover transition-opacity duration-200 ${
+          className={`object-contain transition-opacity duration-200 ${
             activeIndex === 1 ? "opacity-100" : "opacity-0"
           }`}
           placeholder={imgB.asset.metadata?.lqip ? "blur" : "empty"}
           blurDataURL={imgB.asset.metadata?.lqip}
         />
 
-        {/* Active label */}
-        <span className="pointer-events-none absolute bottom-3 left-3 rounded bg-black/50 px-2.5 py-1 text-xs text-white/90">
-          {images[activeIndex].label || `Image ${activeIndex + 1}`}
-          <span className="ml-2 text-white/50">click to toggle</span>
+        {/* Tab-style selector — clearly shows which image is active */}
+        <div className="pointer-events-auto absolute top-3 left-3 z-10 flex gap-1">
+          {images.map((img, i) => (
+            <button
+              key={img._key}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveIndex(i);
+              }}
+              className={`rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+                i === activeIndex
+                  ? "bg-white text-black shadow-sm"
+                  : "bg-black/40 text-white/70 hover:bg-black/60 hover:text-white/90"
+              }`}
+            >
+              {img.label || `Image ${i + 1}`}
+            </button>
+          ))}
+        </div>
+
+        <span className="pointer-events-none absolute bottom-3 right-3 rounded bg-black/50 px-2 py-1 text-xs text-white/50">
+          click to toggle
         </span>
       </div>
 
@@ -253,7 +286,10 @@ function ComparisonSlideshow({
 
   return (
     <figure className="my-8">
-      <div className="relative aspect-[4/3] w-full select-none overflow-hidden bg-[#f2f0ec]">
+      <div
+        className="relative w-full select-none overflow-hidden bg-[#f2f0ec]"
+        style={{ aspectRatio: aspectFrom(validImages[0]) }}
+      >
         <Image
           key={current._key}
           src={imgSrc(current)}
@@ -261,7 +297,7 @@ function ComparisonSlideshow({
           fill
           sizes={SIZES}
           draggable={false}
-          className="object-cover"
+          className="object-contain"
           placeholder={current.asset?.metadata?.lqip ? "blur" : "empty"}
           blurDataURL={current.asset?.metadata?.lqip}
         />
@@ -318,13 +354,15 @@ function ComparisonSlideshow({
           </button>
         )}
 
-        {/* Label + counter */}
-        <span className="pointer-events-none absolute bottom-3 left-3 rounded bg-black/50 px-2.5 py-1 text-xs text-white/90">
-          {current.label || `${currentIndex + 1} / ${validImages.length}`}
-        </span>
-        <span className="pointer-events-none absolute bottom-3 right-3 rounded bg-black/50 px-2 py-1 text-xs tabular-nums text-white/60">
-          {currentIndex + 1} / {validImages.length}
-        </span>
+        {/* Active image label — prominent gradient bar at the bottom */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
+          <span className="text-sm font-medium text-white">
+            {current.label || `Image ${currentIndex + 1}`}
+          </span>
+          <span className="ml-2 text-xs tabular-nums text-white/50">
+            {currentIndex + 1} / {validImages.length}
+          </span>
+        </div>
       </div>
 
       {caption && (

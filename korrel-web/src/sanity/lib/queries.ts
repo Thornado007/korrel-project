@@ -75,9 +75,15 @@ export const HOME_PAGE_QUERY = `*[_type == "homePage"][0]{
     ${IMAGE_ASSET_FRAGMENT},
     hotspot,
     crop
-  },
-  aboutTitle,
-  aboutBody
+  }
+}`;
+
+// ---- About Page (singleton) ----
+
+export const ABOUT_PAGE_QUERY = `*[_type == "aboutPage"][0]{
+  _id,
+  title,
+  body
 }`;
 
 // ---- Service Page (singleton) ----
@@ -97,6 +103,26 @@ export const SERVICE_PAGE_QUERY = `*[_type == "servicePage"][0]{
     }
   }
 }`;
+
+// ---- Scanning Services ----
+
+export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(orderRank asc, _createdAt asc){
+  _id,
+  title,
+  body[]{
+    ...,
+    _type == "image" => {
+      _key,
+      _type,
+      ${IMAGE_ASSET_FRAGMENT},
+      hotspot,
+      crop,
+      alt
+    }
+  }
+}`;
+
+// ---- Wiki Article (single) ----
 
 export const WIKI_ARTICLE_QUERY = `*[_type == "wikiArticle" && slug.current == $slug][0]{
   _id,
@@ -123,7 +149,8 @@ export const WIKI_ARTICLE_QUERY = `*[_type == "wikiArticle" && slug.current == $
         ${IMAGE_ASSET_FRAGMENT},
         hotspot,
         crop,
-        label
+        label,
+        tags[]->${TAG_FRAGMENT}
       },
       caption
     }

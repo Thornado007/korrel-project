@@ -1,8 +1,13 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { client } from "@/sanity/lib/client";
 import { WIKI_ARTICLE_QUERY } from "@/sanity/lib/queries";
-import { WIKI_CATEGORY_LABELS, type WikiArticle } from "@/sanity/types";
+import {
+  WIKI_CATEGORY_LABELS,
+  WIKI_CATEGORY_SLUGS,
+  type WikiArticle,
+} from "@/sanity/types";
 import { PortableTextImage } from "@/components/PortableTextImage";
 import { PortableTextComparison } from "@/components/PortableTextComparison";
 
@@ -39,11 +44,19 @@ export default async function WikiArticlePage({
 
   if (!article) notFound();
 
+  const categorySlug = WIKI_CATEGORY_SLUGS[article.category];
+  const categoryLabel = WIKI_CATEGORY_LABELS[article.category] ?? article.category;
+
   return (
-    <article className="mx-auto w-full max-w-2xl px-6 py-20 sm:px-8 sm:py-28">
-      <span className="text-xs tracking-wide text-muted uppercase">
-        {WIKI_CATEGORY_LABELS[article.category] ?? article.category}
-      </span>
+    <article className="mx-auto w-full max-w-3xl px-6 py-20 sm:px-8 sm:py-28">
+      {/* Back link */}
+      <Link
+        href={categorySlug ? `/wiki/category/${categorySlug}` : "/wiki"}
+        className="inline-flex items-center gap-1 text-xs tracking-wide text-muted uppercase transition-colors hover:text-foreground"
+      >
+        ← {categoryLabel}
+      </Link>
+
       <h1 className="mt-3 text-3xl font-medium tracking-tight">
         {article.title}
       </h1>

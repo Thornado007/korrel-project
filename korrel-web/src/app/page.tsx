@@ -1,4 +1,3 @@
-import { PortableText } from "@portabletext/react";
 import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 import { client } from "@/sanity/lib/client";
 import { HOME_PAGE_QUERY } from "@/sanity/lib/queries";
@@ -47,20 +46,6 @@ export default async function Home() {
           />
         </div>
       </section>
-
-      {/* About section — editable from Sanity */}
-      {data?.aboutBody && (
-        <section className="border-t border-border">
-          <div className="mx-auto w-full max-w-2xl px-6 py-20 sm:px-8 sm:py-28">
-            <h2 className="text-3xl font-medium tracking-tight">
-              {data.aboutTitle ?? "About"}
-            </h2>
-            <div className="prose-korrel mt-8 flex flex-col gap-5 text-base leading-relaxed text-muted">
-              <PortableText value={data.aboutBody as never[]} />
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

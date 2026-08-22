@@ -4,7 +4,9 @@ import {wikiCategoryPage} from './wikiCategoryPage'
 import {tag} from './tag'
 import {taxonomyCategory} from './taxonomyCategory'
 import {homePage} from './homePage'
+import {aboutPage} from './aboutPage'
 import {servicePage} from './servicePage'
+import {scanningService} from './scanningService'
 
 export const schemaTypes = [
   scanGallery,
@@ -13,5 +15,7 @@ export const schemaTypes = [
   tag,
   taxonomyCategory,
   homePage,
+  aboutPage,
   servicePage,
+  scanningService,
 ]
