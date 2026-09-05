@@ -53,7 +53,7 @@ export default async function GalleryPage() {
       })) ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
+    <div className="mx-auto w-full max-w-6xl px-6 py-10 sm:px-8 sm:py-16">
       {items.length === 0 && filters.length === 0 ? (
         <p className="mt-16 text-sm text-muted">
           No scans have been published yet.

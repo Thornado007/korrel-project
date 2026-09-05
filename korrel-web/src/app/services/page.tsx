@@ -63,20 +63,22 @@ export default async function ServicePage() {
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
+    <div className="mx-auto w-full max-w-6xl px-6 py-10 sm:px-8 sm:py-16">
       {/* Intro text from the servicePage singleton */}
       {pageData?.body && pageData.body.length > 0 && (
-        <div className="prose-korrel max-w-xl text-base leading-relaxed text-foreground">
-          <PortableText
-            value={pageData.body as never}
-            components={serviceBodyComponents}
-          />
+        <div className="overflow-hidden rounded-lg border border-border p-6 sm:p-8">
+          <div className="prose-korrel text-base leading-relaxed text-foreground">
+            <PortableText
+              value={pageData.body as never}
+              components={serviceBodyComponents}
+            />
+          </div>
         </div>
       )}
 
       {/* Scanning services — full-width, stacked vertically */}
       {services.length > 0 && (
-        <div className="mt-16 flex flex-col gap-16">
+        <div className="mt-10 flex flex-col gap-16">
           {services.map((service) => {
             const scan = service.exampleScan;
             const hasScan = !!scan?.asset;
