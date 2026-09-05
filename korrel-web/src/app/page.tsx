@@ -49,18 +49,3 @@ export default async function Home() {
     </div>
   );
 }
-      {data?.aboutBody && (
-        <section className="border-t border-border">
-          <div className="mx-auto w-full max-w-2xl px-6 py-20 sm:px-8 sm:py-28">
-            <h2 className="text-3xl font-medium tracking-tight">
-              {data.aboutTitle ?? "About"}
-            </h2>
-            <div className="prose-korrel mt-8 flex flex-col gap-5 text-base leading-relaxed text-muted">
-              <PortableText value={data.aboutBody as never[]} />
-            </div>
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
