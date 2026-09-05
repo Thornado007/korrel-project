@@ -1,8 +1,12 @@
 import { client } from "@/sanity/lib/client";
-import { SCANS_QUERY } from "@/sanity/lib/queries";
+import { SCANS_QUERY, GALLERY_PAGE_QUERY } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
-import type { ScanGallery } from "@/sanity/types";
-import { GalleryGrid, type GalleryItem } from "@/components/GalleryGrid";
+import type { ScanGallery, GalleryPageData } from "@/sanity/types";
+import {
+  GalleryGrid,
+  type GalleryItem,
+  type GalleryFilter,
+} from "@/components/GalleryGrid";
 
 export const metadata = {
   title: "Gallery — Korrel",
@@ -11,7 +15,10 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function GalleryPage() {
-  const scans = await client.fetch<ScanGallery[]>(SCANS_QUERY);
+  const [scans, pageData] = await Promise.all([
+    client.fetch<ScanGallery[]>(SCANS_QUERY),
+    client.fetch<GalleryPageData | null>(GALLERY_PAGE_QUERY),
+  ]);
 
   const items: GalleryItem[] = scans
     .filter((scan) => scan.image?.asset)
@@ -34,20 +41,25 @@ export default async function GalleryPage() {
       };
     });
 
+  // Build filter categories from galleryPage settings
+  const filters: GalleryFilter[] =
+    pageData?.filters
+      ?.filter((f) => f.tags && f.tags.length > 0)
+      .map((f) => ({
+        _id: f._id,
+        title: f.title,
+        slug: f.slug,
+        tags: f.tags,
+      })) ?? [];
+
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
-      <h1 className="text-3xl font-medium tracking-tight">Gallery</h1>
-      <p className="mt-3 max-w-lg text-base text-muted">
-        A selection of high-resolution film scans. Click any image to enlarge
-        and open the info view to examine technical specifications.
-      </p>
-
-      {items.length === 0 ? (
+      {items.length === 0 && filters.length === 0 ? (
         <p className="mt-16 text-sm text-muted">
           No scans have been published yet.
         </p>
       ) : (
-        <GalleryGrid items={items} />
+        <GalleryGrid items={items} filters={filters} />
       )}
     </div>
   );

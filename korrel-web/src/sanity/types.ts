@@ -149,9 +149,51 @@ export interface ServicePageData {
    Scanning Service
    ------------------------------------------------------------------ */
 
+export interface ProcessStep {
+  _key: string;
+  label: string;
+  image?: SanityImageValue;
+}
+
+export interface ProcessStepSet {
+  _key: string;
+  title?: string;
+  steps: ProcessStep[];
+}
+
+export interface ServiceGalleryImage extends SanityImageValue {
+  _key: string;
+  alt?: string;
+}
+
 export interface ScanningServiceData {
   _id: string;
   title: string;
   exampleScan?: SanityImageValue;
+  gallery?: ServiceGalleryImage[];
+  maxGalleryImages?: number;
+  processSteps?: ProcessStepSet[];
   body?: unknown[];
+}
+
+/* ------------------------------------------------------------------
+   Gallery Page (singleton)
+   ------------------------------------------------------------------ */
+
+export interface GalleryFilterTag {
+  _id: string;
+  title: string;
+  slug: string;
+}
+
+export interface GalleryFilterCategory {
+  _id: string;
+  title: string;
+  slug: string;
+  tags: GalleryFilterTag[];
+}
+
+export interface GalleryPageData {
+  _id: string;
+  filters?: GalleryFilterCategory[];
 }

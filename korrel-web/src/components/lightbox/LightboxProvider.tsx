@@ -319,9 +319,26 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const delta = -e.deltaY * 0.0015;
+
+      // Mouse position relative to the stage center — zoom toward cursor.
+      const stageRect = stage.getBoundingClientRect();
+      const mouseX = e.clientX - stageRect.left - stageRect.width / 2;
+      const mouseY = e.clientY - stageRect.top - stageRect.height / 2;
+
       setScale((s) => {
         const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s + s * delta));
-        setTranslate((t) => clampTranslate(t, next));
+
+        if (next <= 1) {
+          setTranslate({ x: 0, y: 0 });
+        } else {
+          const ratio = next / s;
+          setTranslate((t) => {
+            const newX = mouseX - (mouseX - t.x) * ratio;
+            const newY = mouseY - (mouseY - t.y) * ratio;
+            return clampTranslate({ x: newX, y: newY }, next);
+          });
+        }
+
         return next;
       });
     };

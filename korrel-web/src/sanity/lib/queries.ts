@@ -114,6 +114,27 @@ export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(or
     hotspot,
     crop
   },
+  gallery[]{
+    _key,
+    ${IMAGE_ASSET_FRAGMENT},
+    hotspot,
+    crop,
+    alt
+  },
+  maxGalleryImages,
+  processSteps[]{
+    _key,
+    title,
+    steps[]{
+      _key,
+      label,
+      image{
+        ${IMAGE_ASSET_FRAGMENT},
+        hotspot,
+        crop
+      }
+    }
+  },
   body[]{
     ...,
     _type == "image" => {
@@ -123,6 +144,22 @@ export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(or
       hotspot,
       crop,
       alt
+    }
+  }
+}`;
+
+// ---- Gallery Page (singleton) ----
+
+export const GALLERY_PAGE_QUERY = `*[_type == "galleryPage"][0]{
+  _id,
+  filters[]->{
+    _id,
+    title,
+    "slug": slug.current,
+    "tags": *[_type == "tag" && references(^._id)] | order(title asc) {
+      _id,
+      title,
+      "slug": slug.current
     }
   }
 }`;

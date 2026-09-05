@@ -7,6 +7,7 @@ import {homePage} from './homePage'
 import {aboutPage} from './aboutPage'
 import {servicePage} from './servicePage'
 import {scanningService} from './scanningService'
+import {galleryPage} from './galleryPage'
 
 export const schemaTypes = [
   scanGallery,
@@ -18,4 +19,5 @@ export const schemaTypes = [
   aboutPage,
   servicePage,
   scanningService,
+  galleryPage,
 ]

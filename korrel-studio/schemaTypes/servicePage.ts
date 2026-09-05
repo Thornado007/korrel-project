@@ -9,14 +9,15 @@ export const servicePage = defineType({
       name: 'title',
       title: 'Page Title',
       type: 'string',
-      description: 'The main title of the service page.',
+      description: 'Internal label (not shown on the page).',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'body',
-      title: 'Body',
+      title: 'Intro Text',
       type: 'array',
-      description: 'Full page content — text, headings, images, and more.',
+      description:
+        'Introductory text displayed at the top of the service page, above the individual services.',
       of: [
         defineArrayMember({
           type: 'block',
