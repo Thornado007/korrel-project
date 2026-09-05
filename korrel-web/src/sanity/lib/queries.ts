@@ -135,6 +135,17 @@ export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(or
       }
     }
   },
+  pricingTiers[]{
+    _key,
+    title,
+    description,
+    priceLines[]{
+      _key,
+      label,
+      price
+    },
+    note
+  },
   body[]{
     ...,
     _type == "image" => {

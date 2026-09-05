@@ -166,6 +166,97 @@ export const scanningService = defineType({
       ],
     }),
 
+    /* ---- Pricing Tiers ---- */
+    defineField({
+      name: 'pricingTiers',
+      title: 'Pricing Tiers',
+      type: 'array',
+      description:
+        'Pricing options for this service, displayed side by side (max 3 per row). E.g. "RAW Scan Only", "Flat Inversion", "Extra Post-Processing".',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'pricingTier',
+          title: 'Pricing Tier',
+          fields: [
+            defineField({
+              name: 'title',
+              title: 'Tier Title',
+              type: 'string',
+              description: 'e.g. "RAW Scan Only", "Flat Inversion"',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'description',
+              title: 'Description',
+              type: 'text',
+              rows: 4,
+              description:
+                'Explain what is included in this tier.',
+            }),
+            defineField({
+              name: 'priceLines',
+              title: 'Price Lines',
+              type: 'array',
+              description:
+                'Individual price lines. Leave empty for tiers with custom/variable pricing.',
+              of: [
+                defineArrayMember({
+                  type: 'object',
+                  name: 'priceLine',
+                  title: 'Price Line',
+                  fields: [
+                    defineField({
+                      name: 'label',
+                      title: 'Label',
+                      type: 'string',
+                      description: 'e.g. "Uncut film roll", "Colour negative"',
+                      validation: (Rule) => Rule.required(),
+                    }),
+                    defineField({
+                      name: 'price',
+                      title: 'Price',
+                      type: 'string',
+                      description: 'e.g. "€7", "+€5 per roll | +€1 per frame"',
+                      validation: (Rule) => Rule.required(),
+                    }),
+                  ],
+                  preview: {
+                    select: {
+                      title: 'label',
+                      subtitle: 'price',
+                    },
+                  },
+                }),
+              ],
+            }),
+            defineField({
+              name: 'note',
+              title: 'Note',
+              type: 'text',
+              rows: 2,
+              description:
+                'Optional footnote shown below the price lines, e.g. "Pricing depends on the scope and time required."',
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              line0: 'priceLines.0.label',
+              line1: 'priceLines.1.label',
+            },
+            prepare({title, line0, line1}) {
+              const lines = [line0, line1].filter(Boolean).join(', ')
+              return {
+                title: title || 'Pricing Tier',
+                subtitle: lines || 'No price lines',
+              }
+            },
+          },
+        }),
+      ],
+    }),
+
     /* ---- Gallery ---- */
     defineField({
       name: 'gallery',

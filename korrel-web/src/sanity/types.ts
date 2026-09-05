@@ -166,6 +166,20 @@ export interface ServiceGalleryImage extends SanityImageValue {
   alt?: string;
 }
 
+export interface PriceLine {
+  _key: string;
+  label: string;
+  price: string;
+}
+
+export interface PricingTier {
+  _key: string;
+  title: string;
+  description?: string;
+  priceLines?: PriceLine[];
+  note?: string;
+}
+
 export interface ScanningServiceData {
   _id: string;
   title: string;
@@ -173,6 +187,7 @@ export interface ScanningServiceData {
   gallery?: ServiceGalleryImage[];
   maxGalleryImages?: number;
   processSteps?: ProcessStepSet[];
+  pricingTiers?: PricingTier[];
   body?: unknown[];
 }
 
