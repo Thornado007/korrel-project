@@ -156,46 +156,88 @@ export default async function ServicePage() {
                               : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                         }`}
                       >
-                        {service.pricingTiers.map((tier) => (
-                          <div
-                            key={tier._key}
-                            className="flex flex-col rounded-lg border border-border bg-[#fafaf9] p-5 sm:p-6"
-                          >
-                            <h3 className="text-sm font-semibold tracking-tight">
-                              {tier.title}
-                            </h3>
+                        {service.pricingTiers.map((tier) => {
+                          const hasTierImage = !!tier.image?.asset;
+                          const tierImgW =
+                            tier.image?.asset?.metadata?.dimensions?.width ??
+                            800;
+                          const tierImgH =
+                            tier.image?.asset?.metadata?.dimensions?.height ??
+                            600;
+                          const tierThumbW = 600;
+                          const tierThumbH = Math.round(
+                            (tierImgH / tierImgW) * tierThumbW
+                          );
 
-                            {tier.description && (
-                              <p className="mt-2 text-xs leading-relaxed text-muted">
-                                {tier.description}
-                              </p>
-                            )}
+                          return (
+                            <div
+                              key={tier._key}
+                              className="flex flex-col overflow-hidden rounded-lg border border-border bg-[#fafaf9]"
+                            >
+                              {hasTierImage && (
+                                <LightboxTrigger
+                                  src={urlFor(tier.image!).width(2400).url()}
+                                  fullSrc={tier.image!.asset!.url}
+                                  title={tier.title}
+                                >
+                                  <Image
+                                    src={urlFor(tier.image!)
+                                      .width(tierThumbW)
+                                      .url()}
+                                    alt={tier.title}
+                                    width={tierThumbW}
+                                    height={tierThumbH}
+                                    className="w-full cursor-zoom-in"
+                                    placeholder={
+                                      tier.image!.asset!.metadata?.lqip
+                                        ? "blur"
+                                        : "empty"
+                                    }
+                                    blurDataURL={
+                                      tier.image!.asset!.metadata?.lqip
+                                    }
+                                  />
+                                </LightboxTrigger>
+                              )}
+                              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                                <h3 className="text-sm font-semibold tracking-tight">
+                                  {tier.title}
+                                </h3>
 
-                            {tier.priceLines && tier.priceLines.length > 0 && (
-                              <dl className="mt-4 flex flex-col gap-1.5 border-t border-border pt-4">
-                                {tier.priceLines.map((line) => (
-                                  <div
-                                    key={line._key}
-                                    className="flex items-baseline justify-between gap-3 text-xs"
-                                  >
-                                    <dt className="text-foreground">
-                                      {line.label}
-                                    </dt>
-                                    <dd className="shrink-0 font-medium tabular-nums text-foreground">
-                                      {line.price}
-                                    </dd>
-                                  </div>
-                                ))}
-                              </dl>
-                            )}
+                                {tier.description && (
+                                  <p className="mt-2 text-xs leading-relaxed text-muted">
+                                    {tier.description}
+                                  </p>
+                                )}
 
-                            {tier.note && (
-                              <p className="mt-4 border-t border-border pt-3 text-xs italic text-muted">
-                                {tier.note}
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                                {tier.priceLines &&
+                                  tier.priceLines.length > 0 && (
+                                    <dl className="mt-4 flex flex-col gap-1.5 border-t border-border pt-4">
+                                      {tier.priceLines.map((line) => (
+                                        <div
+                                          key={line._key}
+                                          className="flex items-baseline justify-between gap-3 text-xs"
+                                        >
+                                          <dt className="text-foreground">
+                                            {line.label}
+                                          </dt>
+                                          <dd className="shrink-0 font-medium tabular-nums text-foreground">
+                                            {line.price}
+                                          </dd>
+                                        </div>
+                                      ))}
+                                    </dl>
+                                  )}
+
+                                {tier.note && (
+                                  <p className="mt-4 border-t border-border pt-3 text-xs italic text-muted">
+                                    {tier.note}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

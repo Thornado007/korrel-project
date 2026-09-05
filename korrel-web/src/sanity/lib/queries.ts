@@ -138,6 +138,11 @@ export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(or
   pricingTiers[]{
     _key,
     title,
+    image{
+      ${IMAGE_ASSET_FRAGMENT},
+      hotspot,
+      crop
+    },
     description,
     priceLines[]{
       _key,

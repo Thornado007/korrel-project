@@ -175,6 +175,7 @@ export interface PriceLine {
 export interface PricingTier {
   _key: string;
   title: string;
+  image?: SanityImageValue;
   description?: string;
   priceLines?: PriceLine[];
   note?: string;

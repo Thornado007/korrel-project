@@ -187,6 +187,14 @@ export const scanningService = defineType({
               validation: (Rule) => Rule.required(),
             }),
             defineField({
+              name: 'image',
+              title: 'Tier Image',
+              type: 'image',
+              options: {hotspot: true},
+              description:
+                'Optional image representing this tier, e.g. the inverted scan for "Flat Inversion".',
+            }),
+            defineField({
               name: 'description',
               title: 'Description',
               type: 'text',
