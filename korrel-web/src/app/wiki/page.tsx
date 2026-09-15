@@ -24,6 +24,7 @@ export const revalidate = 60;
 
 /** Fallback order used when no Wiki Category documents set an order. */
 const CATEGORY_ORDER = [
+  "general",
   "lens",
   "filmHolder",
   "lightSource",

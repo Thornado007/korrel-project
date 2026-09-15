@@ -10,8 +10,10 @@ import {servicePage} from './servicePage'
 import {scanningService} from './scanningService'
 import {galleryPage} from './galleryPage'
 import {articleBody} from './articleBody'
+import {articleSources} from './articleSources'
 import {imageGroup} from './imageGroup'
 import {imageComparison} from './imageComparison'
+import {youtube} from './youtube'
 
 export const schemaTypes = [
   // Documents
@@ -29,6 +31,8 @@ export const schemaTypes = [
 
   // Reusable article building blocks
   articleBody,
+  articleSources,
   imageGroup,
   imageComparison,
+  youtube,
 ]

@@ -1,8 +1,28 @@
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
-import type { ArticleImage } from "@/sanity/types";
+import type { ArticleImage, ArticleImageWidth } from "@/sanity/types";
 import { LightboxTrigger } from "@/components/lightbox/LightboxTrigger";
 import type { LightboxImage } from "@/components/lightbox/LightboxProvider";
+
+/**
+ * Display widths. Narrow options only kick in from `sm:` upward so images
+ * always use the full column on phones, where shrinking them would just
+ * make them unreadable.
+ */
+const WIDTH_CLASSES: Record<ArticleImageWidth, string> = {
+  full: "w-full",
+  large: "w-full sm:w-4/5",
+  medium: "w-full sm:w-3/5",
+  small: "w-full sm:w-2/5",
+};
+
+/** Fraction of the column each width takes, used to size the CDN request. */
+const WIDTH_FACTORS: Record<ArticleImageWidth, number> = {
+  full: 1,
+  large: 0.8,
+  medium: 0.6,
+  small: 0.4,
+};
 
 /** Build the lightbox payload for an article image. */
 export function toLightboxImage(img: ArticleImage): LightboxImage {
@@ -35,6 +55,12 @@ interface ArticleImageFigureProps {
   aspectRatio?: string;
   /** Hide the per-image label/caption (e.g. when a group caption is used). */
   hideMeta?: boolean;
+  /**
+   * Honour the image's own `displayWidth` / `maxHeight` settings. Only the
+   * standalone image block does this — inside a group or comparison the
+   * layout controls sizing instead.
+   */
+  respectDisplayWidth?: boolean;
   /** Enables prev/next inside the lightbox. */
   galleryImages?: LightboxImage[];
   galleryIndex?: number;
@@ -52,6 +78,7 @@ export function ArticleImageFigure({
   cover = false,
   aspectRatio,
   hideMeta = false,
+  respectDisplayWidth = false,
   galleryImages,
   galleryIndex,
   className,
@@ -62,13 +89,28 @@ export function ArticleImageFigure({
   const lqip = image.asset.metadata?.lqip;
   const hasMeta = !hideMeta && (image.label || image.caption);
 
+  // Editor-chosen width (standalone images only).
+  const displayWidth: ArticleImageWidth = respectDisplayWidth
+    ? (image.displayWidth ?? "full")
+    : "full";
+  const widthClass = WIDTH_CLASSES[displayWidth] ?? WIDTH_CLASSES.full;
+  const factor = WIDTH_FACTORS[displayWidth] ?? 1;
+
+  // Request a proportionally smaller file when the image renders narrower.
+  const requestWidth = Math.round(width * factor);
+
   const dims = image.asset.metadata?.dimensions;
   const intrinsicWidth = dims?.width ?? 1200;
   const intrinsicHeight = dims?.height ?? 800;
-  const renderHeight = Math.round((intrinsicHeight / intrinsicWidth) * width);
+  const renderHeight = Math.round(
+    (intrinsicHeight / intrinsicWidth) * requestWidth
+  );
+
+  // Optional hard height cap for very tall images.
+  const maxHeight = respectDisplayWidth ? image.maxHeight : undefined;
 
   return (
-    <figure className={`flex flex-col gap-2 ${className ?? ""}`}>
+    <figure className={`flex flex-col ${widthClass} ${className ?? ""}`}>
       <LightboxTrigger
         src={urlFor(image).width(2400).url()}
         fullSrc={image.asset.url}
@@ -85,7 +127,7 @@ export function ArticleImageFigure({
             style={{ aspectRatio: aspectRatio ?? "4 / 3" }}
           >
             <Image
-              src={urlFor(image).width(width).url()}
+              src={urlFor(image).width(requestWidth).url()}
               alt={alt}
               fill
               sizes={sizes}
@@ -96,12 +138,17 @@ export function ArticleImageFigure({
           </span>
         ) : (
           <Image
-            src={urlFor(image).width(width).url()}
+            src={urlFor(image).width(requestWidth).url()}
             alt={alt}
-            width={width}
+            width={requestWidth}
             height={renderHeight}
             sizes={sizes}
-            className="h-auto w-full"
+            // `object-contain` + max-height keeps tall images inside the cap
+            // without distorting them.
+            className={
+              maxHeight ? "mx-auto h-auto w-auto object-contain" : "h-auto w-full"
+            }
+            style={maxHeight ? { maxHeight: `${maxHeight}px` } : undefined}
             placeholder={lqip ? "blur" : "empty"}
             blurDataURL={lqip}
           />
@@ -109,7 +156,7 @@ export function ArticleImageFigure({
       </LightboxTrigger>
 
       {hasMeta && (
-        <figcaption className="text-sm leading-relaxed text-muted">
+        <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {image.label && (
             <span className="font-medium text-foreground">{image.label}</span>
           )}

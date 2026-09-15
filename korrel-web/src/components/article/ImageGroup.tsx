@@ -54,7 +54,7 @@ export function ImageGroup({ value }: { value: ImageGroupBlock }) {
   const lightboxImages = images.map(toLightboxImage);
 
   return (
-    <figure className="my-8">
+    <figure className="my-6">
       <div className={`grid gap-3 sm:gap-4 ${columnClass}`}>
         {images.map((img, index) => (
           <ArticleImageFigure
@@ -71,7 +71,7 @@ export function ImageGroup({ value }: { value: ImageGroupBlock }) {
       </div>
 
       {value.caption && (
-        <figcaption className="mt-3 text-sm leading-relaxed text-muted">
+        <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {value.caption}
         </figcaption>
       )}

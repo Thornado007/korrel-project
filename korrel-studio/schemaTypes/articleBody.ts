@@ -9,9 +9,10 @@ import {articleImageFields, articleImagePreview} from './articleImageFields'
  * text → images → text → comparison → text as often as needed:
  *
  * - `block`           rich text with headings, lists, quotes and marks
- * - `image`           a single full-width image with metadata
+ * - `image`           a single image, with a selectable display width
  * - `imageGroup`      1–4 images per row, layout chosen per group
  * - `imageComparison` slider / overlay switch / slideshow
+ * - `youtube`         embedded video (thumbnail, click to play)
  * - `callout`         a highlighted note box
  */
 export const articleBody = defineType({
@@ -93,6 +94,9 @@ export const articleBody = defineType({
 
     /* ---- Comparisons: slider / overlay switch / slideshow ---- */
     defineArrayMember({type: 'imageComparison'}),
+
+    /* ---- Embedded YouTube video (thumbnail → click to play) ---- */
+    defineArrayMember({type: 'youtube'}),
 
     /* ---- Highlighted note ---- */
     defineArrayMember({

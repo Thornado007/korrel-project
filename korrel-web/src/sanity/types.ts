@@ -34,9 +34,25 @@ export interface ScanGallery {
   title: string;
   image?: SanityImageValue;
   tags?: Tag[];
+  /** Manual gallery position — lower numbers appear first. */
+  orderRank?: number;
+}
+
+/**
+ * An article image that the editor flagged with "Also show in the Gallery
+ * page". Shaped to merge cleanly with `ScanGallery` items.
+ */
+export interface GalleryArticleImage extends SanityImageValue {
+  _key: string;
+  title?: string;
+  tags?: Tag[];
+  /** Slug of the article the image came from, for attribution. */
+  articleSlug?: string;
+  articleTitle?: string;
 }
 
 export const WIKI_CATEGORY_LABELS: Record<string, string> = {
+  general: "General",
   lens: "Lens",
   filmHolder: "Film Holder",
   lightSource: "Light Source",
@@ -50,6 +66,7 @@ export const WIKI_CATEGORY_LABELS: Record<string, string> = {
  * shape stays stable even if labels are edited later.
  */
 export const WIKI_CATEGORY_SLUGS: Record<string, string> = {
+  general: "general",
   lens: "lens",
   filmHolder: "film-holder",
   lightSource: "light-source",
@@ -107,13 +124,21 @@ export interface WikiArticleListItem {
  * Shared metadata attached to every image inside an article body —
  * matches `articleImageFields` in the Studio schema.
  */
+export type ArticleImageWidth = "full" | "large" | "medium" | "small";
+
 export interface ArticleImage extends SanityImageValue {
   _key: string;
   label?: string;
   caption?: string;
   alt?: string;
+  /** Rendered width — narrower options keep tall images from dominating. */
+  displayWidth?: ArticleImageWidth;
+  /** Optional height cap in px, for very tall images on wide screens. */
+  maxHeight?: number;
   /** Whether this image belongs to the cross-article comparison database. */
   includeInComparisons?: boolean;
+  /** Whether this image is also published to the public Gallery page. */
+  includeInGallery?: boolean;
   tags?: Tag[];
 }
 
@@ -157,8 +182,46 @@ export interface CalloutBlock {
   text: string;
 }
 
+/** An embedded YouTube video inside an article body. */
+export interface YouTubeBlock {
+  _type: "youtube";
+  _key: string;
+  url: string;
+  title?: string;
+  caption?: string;
+  startAt?: number;
+}
+
+/* ------------------------------------------------------------------
+   Article sources (reference list at the end of an article)
+   ------------------------------------------------------------------ */
+
+export interface SourceItem {
+  _key: string;
+  title: string;
+  url?: string;
+  author?: string;
+  kind?:
+    | "article"
+    | "datasheet"
+    | "video"
+    | "forum"
+    | "book"
+    | "software"
+    | "other";
+  note?: string;
+}
+
+export interface ArticleSources {
+  heading?: string;
+  general?: SourceItem[];
+  images?: SourceItem[];
+  note?: string;
+}
+
 export interface WikiArticle extends WikiArticleListItem {
   body?: unknown[];
+  sources?: ArticleSources;
 }
 
 /* ------------------------------------------------------------------
@@ -233,6 +296,9 @@ export interface ScanningServiceData {
   _id: string;
   title: string;
   exampleScan?: SanityImageValue;
+  /** Tag used by the "View examples" button to pre-filter the Gallery. */
+  galleryFilterTag?: { _id: string; title: string; slug: string };
+  galleryButtonLabel?: string;
   gallery?: ServiceGalleryImage[];
   maxGalleryImages?: number;
   processSteps?: ProcessStepSet[];

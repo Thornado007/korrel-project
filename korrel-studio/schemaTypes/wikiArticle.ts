@@ -9,6 +9,7 @@ import {DocumentTextIcon} from '@sanity/icons/DocumentText'
  * post that only needs to be featured under "Selected articles".
  */
 export const WIKI_CATEGORIES = [
+  {title: 'General', value: 'general'},
   {title: 'Lens', value: 'lens'},
   {title: 'Film Holder', value: 'filmHolder'},
   {title: 'Light Source', value: 'lightSource'},
@@ -98,6 +99,14 @@ export const wikiArticle = defineType({
       description:
         'Mix text, image groups and comparisons in any order. Use "Image Group" for images side by side, and "Image Comparison" for slider / overlay / slideshow comparisons.',
       type: 'articleBody',
+      group: 'content',
+    }),
+    defineField({
+      name: 'sources',
+      title: 'Sources',
+      description:
+        'Reference list rendered at the end of the article — general sources plus separate credits for images and figures.',
+      type: 'articleSources',
       group: 'content',
     }),
   ],

@@ -37,11 +37,44 @@ export const articleImageFields = [
     description: 'Describes the image for screen readers and search engines.',
   }),
   defineField({
+    name: 'displayWidth',
+    title: 'Display width',
+    type: 'string',
+    description:
+      'How wide the image is rendered. Use a narrower width for tall/portrait images so they do not take up the whole screen height.',
+    options: {
+      list: [
+        {title: 'Full — full column width', value: 'full'},
+        {title: 'Large — 80%', value: 'large'},
+        {title: 'Medium — 60%', value: 'medium'},
+        {title: 'Small — 40%', value: 'small'},
+      ],
+      layout: 'radio',
+    },
+    initialValue: 'full',
+  }),
+  defineField({
+    name: 'maxHeight',
+    title: 'Limit height (optional)',
+    type: 'number',
+    description:
+      'Maximum height in pixels on wide screens. Handy for very tall images — e.g. 700. Leave empty for no limit.',
+    validation: (Rule) => Rule.min(120).max(2000),
+  }),
+  defineField({
     name: 'includeInComparisons',
     title: 'Include in comparison database',
     type: 'boolean',
     description:
       'Turn on for real sample scans that should be comparable across articles (this unlocks the taxonomy tags below). Leave off for illustrative photos, screenshots, product shots, etc.',
+    initialValue: false,
+  }),
+  defineField({
+    name: 'includeInGallery',
+    title: 'Also show in the Gallery page',
+    type: 'boolean',
+    description:
+      'Turn on to publish this image to the public Gallery as well (it keeps the tags below, so gallery filters work on it).',
     initialValue: false,
   }),
   defineField({
@@ -52,11 +85,14 @@ export const articleImageFields = [
     type: 'array',
     of: [defineArrayMember({type: 'reference', to: [{type: 'tag'}]})],
     options: {layout: 'tags'},
-    // Hidden unless the image is part of the comparison database. Images
-    // tagged before this toggle existed keep showing their tags so no
-    // metadata silently disappears from the Studio.
+    // Only shown when the image is actually published somewhere that uses
+    // the taxonomy (the comparison database or the Gallery). Images tagged
+    // before these toggles existed keep showing their tags so no metadata
+    // silently disappears from the Studio.
     hidden: ({parent}) =>
-      !parent?.includeInComparisons && !(Array.isArray(parent?.tags) && parent.tags.length > 0),
+      !parent?.includeInComparisons &&
+      !parent?.includeInGallery &&
+      !(Array.isArray(parent?.tags) && parent.tags.length > 0),
   }),
 ]
 
@@ -70,6 +106,8 @@ export const articleImagePreview = {
     caption: 'caption',
     alt: 'alt',
     includeInComparisons: 'includeInComparisons',
+    includeInGallery: 'includeInGallery',
+    displayWidth: 'displayWidth',
     media: 'asset',
   },
   prepare({
@@ -77,17 +115,27 @@ export const articleImagePreview = {
     caption,
     alt,
     includeInComparisons,
+    includeInGallery,
+    displayWidth,
     media,
   }: {
     label?: string
     caption?: string
     alt?: string
     includeInComparisons?: boolean
+    includeInGallery?: boolean
+    displayWidth?: string
     media?: PreviewMediaValue
   }) {
+    const flags = [
+      includeInComparisons ? 'Comparisons' : null,
+      includeInGallery ? 'Gallery' : null,
+      displayWidth && displayWidth !== 'full' ? `${displayWidth} width` : null,
+    ].filter(Boolean)
+
     return {
       title: label || caption || alt || 'Image',
-      subtitle: includeInComparisons ? 'In comparison database' : undefined,
+      subtitle: flags.length > 0 ? flags.join(' · ') : undefined,
       media,
     }
   },

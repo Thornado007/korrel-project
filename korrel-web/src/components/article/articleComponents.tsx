@@ -5,10 +5,12 @@ import type {
   CalloutBlock,
   ImageComparison,
   ImageGroupBlock,
+  YouTubeBlock,
 } from "@/sanity/types";
 import { ArticleImageFigure } from "./ArticleImageFigure";
 import { ImageGroup } from "./ImageGroup";
 import { ArticleImageComparison } from "./ImageComparison";
+import { YouTubeEmbed } from "./YouTubeEmbed";
 
 const CALLOUT_TONES: Record<string, string> = {
   note: "border-border bg-[#f7f6f3]",
@@ -27,7 +29,12 @@ const CALLOUT_TONES: Record<string, string> = {
 export const articleComponents: PortableTextComponents = {
   types: {
     image: ({ value }: { value: ArticleImageBlock }) => (
-      <ArticleImageFigure image={value} className="my-8" width={1200} />
+      <ArticleImageFigure
+        image={value}
+        className="my-6"
+        width={1200}
+        respectDisplayWidth
+      />
     ),
     imageGroup: ({ value }: { value: ImageGroupBlock }) => (
       <ImageGroup value={value} />
@@ -35,9 +42,12 @@ export const articleComponents: PortableTextComponents = {
     imageComparison: ({ value }: { value: ImageComparison }) => (
       <ArticleImageComparison value={value} />
     ),
+    youtube: ({ value }: { value: YouTubeBlock }) => (
+      <YouTubeEmbed value={value} />
+    ),
     callout: ({ value }: { value: CalloutBlock }) => (
       <aside
-        className={`my-8 rounded-lg border p-4 sm:p-5 ${
+        className={`my-5 rounded-lg border p-3.5 sm:p-4 ${
           CALLOUT_TONES[value.tone ?? "note"] ?? CALLOUT_TONES.note
         }`}
       >

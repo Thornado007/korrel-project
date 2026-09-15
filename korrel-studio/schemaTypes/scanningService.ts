@@ -38,6 +38,25 @@ export const scanningService = defineType({
       description:
         'A main example scan for this service. Shown as the hero image at the top of the card.',
     }),
+
+    /* ---- "View examples" → Gallery with a filter pre-applied ---- */
+    defineField({
+      name: 'galleryFilterTag',
+      title: 'Gallery filter tag',
+      description:
+        'Pick the tag that marks scans made with this service (e.g. the "Coolscan" tag). A "View examples" button then links to the Gallery with that filter already switched on.',
+      type: 'reference',
+      to: [{type: 'tag'}],
+    }),
+    defineField({
+      name: 'galleryButtonLabel',
+      title: 'Gallery button label',
+      type: 'string',
+      description: 'Defaults to "View examples".',
+      placeholder: 'View examples',
+      // Pointless without a tag to filter by.
+      hidden: ({parent}) => !parent?.galleryFilterTag,
+    }),
     defineField({
       name: 'body',
       title: 'Body',

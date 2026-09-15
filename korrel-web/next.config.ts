@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.sanity.io",
       },
+      {
+        // YouTube video thumbnails used by the article video embeds.
+        protocol: "https",
+        hostname: "i.ytimg.com",
+      },
     ],
   },
 };

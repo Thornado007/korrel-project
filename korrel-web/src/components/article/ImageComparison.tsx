@@ -186,7 +186,7 @@ function ComparisonSlider({
   };
 
   return (
-    <figure className="my-8">
+    <figure className="my-6">
       <div
         ref={containerRef}
         className="relative w-full select-none overflow-hidden bg-[#f2f0ec]"
@@ -264,7 +264,7 @@ function ComparisonSlider({
       </div>
 
       {caption && (
-        <figcaption className="mt-2 text-sm leading-relaxed text-muted">
+        <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {caption}
         </figcaption>
       )}
@@ -295,7 +295,7 @@ function ComparisonOverlay({
   const lightboxImages = valid.map(toLightbox);
 
   return (
-    <figure className="my-8">
+    <figure className="my-6">
       <div
         className="relative w-full select-none overflow-hidden bg-[#f2f0ec]"
         style={{ aspectRatio: aspectFrom(valid[0]) }}
@@ -340,7 +340,7 @@ function ComparisonOverlay({
       )}
 
       {caption && (
-        <figcaption className="mt-2 text-sm leading-relaxed text-muted">
+        <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {caption}
         </figcaption>
       )}
@@ -379,7 +379,7 @@ function ComparisonSlideshow({
     });
 
   return (
-    <figure className="my-8">
+    <figure className="my-6">
       <div
         className="relative w-full select-none overflow-hidden bg-[#f2f0ec]"
         style={{ aspectRatio: aspectFrom(valid[0]) }}
@@ -465,7 +465,7 @@ function ComparisonSlideshow({
       )}
 
       {caption && (
-        <figcaption className="mt-2 text-sm leading-relaxed text-muted">
+        <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {caption}
         </figcaption>
       )}

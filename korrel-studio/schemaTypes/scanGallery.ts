@@ -44,11 +44,47 @@ export const scanGallery = defineType({
         layout: 'tags',
       },
     }),
+    defineField({
+      name: 'orderRank',
+      title: 'Order',
+      type: 'number',
+      description:
+        'Controls the position in the Gallery — lower numbers appear first. Scans sharing a number fall back to newest first. Use the "Gallery order" sorting in the list above to drag this into shape.',
+      initialValue: 0,
+    }),
+  ],
+  orderings: [
+    {
+      title: 'Gallery order',
+      name: 'galleryOrder',
+      by: [
+        {field: 'orderRank', direction: 'asc'},
+        {field: '_createdAt', direction: 'desc'},
+      ],
+    },
+    {
+      title: 'Newest first',
+      name: 'newestFirst',
+      by: [{field: '_createdAt', direction: 'desc'}],
+    },
+    {
+      title: 'Title A–Z',
+      name: 'titleAsc',
+      by: [{field: 'title', direction: 'asc'}],
+    },
   ],
   preview: {
     select: {
       title: 'title',
+      orderRank: 'orderRank',
       media: 'image',
+    },
+    prepare({title, orderRank, media}) {
+      return {
+        title,
+        subtitle: orderRank != null ? `Order: ${orderRank}` : undefined,
+        media,
+      }
     },
   },
 })

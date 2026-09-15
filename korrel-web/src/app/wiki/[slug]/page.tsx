@@ -10,6 +10,7 @@ import {
 } from "@/sanity/types";
 import { PageContainer } from "@/components/PageContainer";
 import { articleComponents } from "@/components/article/articleComponents";
+import { ArticleSourceList } from "@/components/article/ArticleSourceList";
 
 export const revalidate = 60;
 
@@ -63,12 +64,12 @@ export default async function WikiArticlePage({
         </h1>
 
         {article.excerpt && (
-          <p className="mt-4 text-base leading-relaxed text-muted">
+          <p className="mt-3 text-base leading-relaxed text-muted">
             {article.excerpt}
           </p>
         )}
 
-        <div className="prose-korrel mt-10 text-base leading-relaxed text-foreground">
+        <div className="prose-korrel mt-6 text-base leading-relaxed text-foreground">
           {article.body ? (
             <PortableText
               value={article.body as never}
@@ -76,6 +77,9 @@ export default async function WikiArticlePage({
             />
           ) : null}
         </div>
+
+        {/* Reference list — general sources + image/figure credits. */}
+        <ArticleSourceList sources={article.sources} />
       </article>
     </PageContainer>
   );

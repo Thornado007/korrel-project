@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   useLightbox,
@@ -18,6 +19,9 @@ export interface GalleryItem {
   fullSrc?: string;
   lqip?: string;
   tags?: LightboxTag[];
+  /** Link back to the article an image came from, when applicable. */
+  sourceHref?: string;
+  sourceLabel?: string;
 }
 
 export interface GalleryFilterTag {
@@ -48,7 +52,36 @@ export function GalleryGrid({
   filters?: GalleryFilter[];
 }) {
   const { openGallery } = useLightbox();
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+
+  // Support deep links such as /gallery?tag=coolscan, used by the
+  // "View examples" buttons on the Services page. Tags are matched by slug
+  // so the URLs stay readable and survive tag renames.
+  const searchParams = useSearchParams();
+  const tagParam = searchParams.get("tag");
+
+  // Resolve the `?tag=` slugs to tag IDs. Derived from props/URL, so it is
+  // computed during render rather than synced in an effect.
+  const initialTagIds = useMemo(() => {
+    if (!tagParam || !filters) return new Set<string>();
+
+    const wanted = new Set(
+      tagParam
+        .split(",")
+        .map((slug) => slug.trim().toLowerCase())
+        .filter(Boolean)
+    );
+
+    return new Set(
+      filters
+        .flatMap((category) => category.tags)
+        .filter((tag) => wanted.has(tag.slug.toLowerCase()))
+        .map((tag) => tag._id)
+    );
+  }, [tagParam, filters]);
+
+  // Seeded once from the URL; afterwards the user's clicks own the state.
+  const [selectedTags, setSelectedTags] =
+    useState<Set<string>>(initialTagIds);
 
   const toggleTag = (tagId: string) => {
     setSelectedTags((prev) => {
@@ -115,13 +148,18 @@ export function GalleryGrid({
             </div>
           ))}
           {selectedTags.size > 0 && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="self-start text-xs text-muted underline underline-offset-2 hover:text-foreground"
-            >
-              Clear all filters
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs text-muted">
+                Showing {filteredItems.length} of {items.length} images
+              </span>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs text-muted underline underline-offset-2 hover:text-foreground"
+              >
+                Clear all filters
+              </button>
+            </div>
           )}
         </div>
       )}

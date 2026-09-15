@@ -97,7 +97,25 @@ text and images can be interleaved in any order.
 | **Image**            | One full-width image with its label and caption shown underneath |
 | **Image Group**      | 1–4 images per row. Pick the *Layout* (stacked, 2/3/4 across) and *Image framing* (whole image, or equal cropped tiles) |
 | **Image Comparison** | *Slider* (drag across 2 images), *Overlay* (any number of images stacked — big numbered buttons underneath switch between them), *Slideshow* (browse with prev/next, info shown underneath) |
+| **YouTube Video**    | Paste any YouTube link. Renders as a thumbnail with a play button; the real player only loads on click (no third-party scripts up front) |
 | **Callout**          | Highlighted Note / Tip / Warning box |
+
+Text spacing is deliberately compact, wiki-style. To add real breathing
+room, press Enter twice — an empty paragraph renders as a gap.
+
+### Controlling image size
+
+Each image has a **Display width** (Full / Large 80% / Medium 60% / Small 40%)
+and an optional **Limit height** in pixels. Use a narrower width and/or a
+height cap for tall portrait images so they do not eat a whole screen on wide
+monitors. On phones every image still uses the full column width.
+
+### Sources
+
+Fill in **Sources** at the bottom of an article to get a reference list at the
+end of the page. It has two separate lists — **General sources** for the text,
+and **Image & figure sources** for picture credits — plus an optional closing
+note.
 
 ### Image metadata & the comparison database
 
@@ -107,15 +125,41 @@ Every image in an article body shares the same fields:
 - **Caption** — longer description shown underneath
 - **Alt text** — for screen readers and search engines
 - **Include in comparison database** — turn on for genuine sample scans that
-  should be comparable across articles. Only then do the **taxonomy tags**
-  (lens, scanner, film stock, light source, …) appear — the same taxonomy the
-  Scan Gallery uses. Leave it off for product shots, screenshots and other
-  illustrative photos, which need no metadata.
+  should be comparable across articles.
+- **Also show in the Gallery page** — publishes the image to `/gallery`
+  alongside the Scan Gallery documents, keeping its tags so gallery filters
+  work on it.
+
+Either toggle reveals the **taxonomy tags** (lens, scanner, film stock, light
+source, …) — the same taxonomy the Scan Gallery uses. Leave both off for
+product shots, screenshots and other illustrative photos, which need no
+metadata.
+
+---
+
+## Gallery & Services
+
+### Ordering the gallery
+
+Scan Gallery documents have an **Order** field — lower numbers appear first,
+and scans sharing a number fall back to newest-first. Switch the Studio list to
+the "Gallery order" sorting to see them in their published order. Article
+images flagged for the gallery are appended after the curated scans.
+
+### "View examples" buttons
+
+On a **Scanning Service**, pick a **Gallery filter tag** (e.g. the "Coolscan"
+tag) and a "View examples" button appears on that service card. It links to
+`/gallery?tag=<slug>`, which opens the Gallery with that filter already
+switched on. The button label is editable via **Gallery button label**.
+
+Deep links accept several slugs too, e.g. `/gallery?tag=coolscan,camerascan`.
 
 ### Categories are optional
 
-`Categories` is a multi-select, so an article can appear under several
-equipment submenus — or under none at all. A standalone blog post (e.g. an
+`Categories` is a multi-select with a **General** option for articles that do
+not fit an equipment category, so an article can appear under several submenus
+— or under none at all. A standalone blog post (e.g. an
 RGB-scanning write-up) can simply be left uncategorised and featured via
 **Wiki Page → Selected Articles**, which renders it with its thumbnail at the
 top of `/wiki`. The legacy single-category field is kept read-only as a

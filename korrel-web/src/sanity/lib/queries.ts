@@ -10,15 +10,38 @@ const TAG_FRAGMENT = `{
 
 const IMAGE_ASSET_FRAGMENT = `asset->{_id, url, metadata{lqip, dimensions{width, height}}}`;
 
-export const SCANS_QUERY = `*[_type == "scanGallery"] | order(_createdAt desc){
+// Gallery scans, ordered by the manual `orderRank` first (lower = earlier),
+// falling back to newest-first for scans sharing a rank.
+export const SCANS_QUERY = `*[_type == "scanGallery"] | order(coalesce(orderRank, 0) asc, _createdAt desc){
   _id,
   title,
+  orderRank,
   image{
     ${IMAGE_ASSET_FRAGMENT},
     hotspot,
     crop
   },
   tags[]->${TAG_FRAGMENT}
+}`;
+
+// Shared projection for an article image published to the Gallery.
+const GALLERY_ARTICLE_IMAGE_FRAGMENT = `{
+  _key,
+  "title": coalesce(label, alt, caption),
+  ${IMAGE_ASSET_FRAGMENT},
+  hotspot,
+  crop,
+  tags[]->${TAG_FRAGMENT}
+}`;
+
+// Images embedded in Wiki articles that the editor flagged with
+// "Also show in the Gallery page". Covers standalone images as well as
+// images nested inside an Image Group or a comparison block.
+export const GALLERY_ARTICLE_IMAGES_QUERY = `*[_type == "wikiArticle" && defined(slug.current)]{
+  "articleTitle": title,
+  "articleSlug": slug.current,
+  "direct": body[_type == "image" && includeInGallery == true]${GALLERY_ARTICLE_IMAGE_FRAGMENT},
+  "nested": body[_type in ["imageGroup", "imageComparison"]].images[includeInGallery == true]${GALLERY_ARTICLE_IMAGE_FRAGMENT}
 }`;
 
 // Shared projection for article listings (Wiki landing page, category pages,
@@ -125,6 +148,8 @@ export const SERVICE_PAGE_QUERY = `*[_type == "servicePage"][0]{
 export const SCANNING_SERVICES_QUERY = `*[_type == "scanningService"] | order(orderRank asc, _createdAt asc){
   _id,
   title,
+  galleryButtonLabel,
+  galleryFilterTag->{_id, title, "slug": slug.current},
   exampleScan{
     ${IMAGE_ASSET_FRAGMENT},
     hotspot,
@@ -208,9 +233,22 @@ const ARTICLE_IMAGE_FRAGMENT = `
   label,
   caption,
   alt,
+  displayWidth,
+  maxHeight,
   includeInComparisons,
+  includeInGallery,
   tags[]->${TAG_FRAGMENT}
 `;
+
+// Source entries rendered at the end of an article.
+const SOURCE_ITEM_FRAGMENT = `{
+  _key,
+  title,
+  url,
+  author,
+  kind,
+  note
+}`;
 
 export const WIKI_ARTICLE_QUERY = `*[_type == "wikiArticle" && slug.current == $slug][0]{
   _id,
@@ -263,5 +301,11 @@ export const WIKI_ARTICLE_QUERY = `*[_type == "wikiArticle" && slug.current == $
         }
       }
     }
+  },
+  sources{
+    heading,
+    note,
+    general[]${SOURCE_ITEM_FRAGMENT},
+    images[]${SOURCE_ITEM_FRAGMENT}
   }
 }`;

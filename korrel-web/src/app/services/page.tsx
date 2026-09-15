@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   PortableText,
   type PortableTextComponents,
@@ -143,6 +144,34 @@ export default async function ServicePage() {
                         components={serviceBodyComponents}
                       />
                     </div>
+                  )}
+
+                  {/* "View examples" — jumps to the Gallery with this
+                      service's tag filter already switched on. */}
+                  {service.galleryFilterTag?.slug && (
+                    <Link
+                      href={`/gallery?tag=${encodeURIComponent(
+                        service.galleryFilterTag.slug
+                      )}`}
+                      className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border border-foreground bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-85"
+                    >
+                      {service.galleryButtonLabel || "View examples"}
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M6 3l5 5-5 5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
                   )}
 
                   {/* Pricing Tiers */}

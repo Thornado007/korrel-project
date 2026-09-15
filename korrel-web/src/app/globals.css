@@ -29,22 +29,51 @@ h3 {
   letter-spacing: -0.02em;
 }
 
-/* ---- Prose typography for article bodies ---- */
+/* ---- Prose typography for article bodies ----
+   Wiki-style: compact. Headings sit close to the text they introduce and
+   paragraphs are only separated by a single line, so an empty paragraph
+   in the editor is what creates real breathing room. */
 
 .prose-korrel > * + * {
-  margin-top: 1.5em;
+  margin-top: 0.65em;
+}
+
+/* An empty paragraph is the editor's deliberate "add space here". */
+.prose-korrel p:empty {
+  margin-top: 0;
+  height: 0.9em;
+}
+
+.prose-korrel h2,
+.prose-korrel h3,
+.prose-korrel h4 {
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .prose-korrel h2 {
-  font-size: 1.375rem;
-  font-weight: 500;
-  margin-top: 2.5em;
+  font-size: 1.3rem;
+  margin-top: 1.5em;
+  /* Small rule under H2s, like a wiki section break. */
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid var(--border);
 }
 
 .prose-korrel h3 {
-  font-size: 1.125rem;
-  font-weight: 500;
-  margin-top: 2em;
+  font-size: 1.1rem;
+  margin-top: 1.2em;
+}
+
+.prose-korrel h4 {
+  font-size: 1rem;
+  margin-top: 1em;
+}
+
+/* Text directly after a heading hugs it. */
+.prose-korrel h2 + *,
+.prose-korrel h3 + *,
+.prose-korrel h4 + * {
+  margin-top: 0.4em;
 }
 
 .prose-korrel blockquote {
@@ -59,7 +88,19 @@ h3 {
   padding-left: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 0.15em;
+}
+
+/* Figures (images, groups, comparisons, video) need a bit more air than
+   text, but far less than before — and their captions sit tight. */
+.prose-korrel figure {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.prose-korrel figcaption {
+  margin-top: 0.35em;
+  line-height: 1.45;
 }
 
 .prose-korrel ul {
