@@ -73,7 +73,7 @@ korrel-project/
 | `/`                               | Home — hero with before/after slider, about text  |
 | `/gallery`                        | Grid of restored scans with lightbox + zoom       |
 | `/services`                       | Service cards with images                         |
-| `/wiki`                           | Wiki landing — category cards with thumbnails     |
+| `/wiki`                           | Wiki landing — selected articles on top, category submenus below |
 | `/wiki/category/[slug]`           | Articles filtered by category                     |
 | `/wiki/[slug]`                    | Full wiki article (Portable Text + image blocks)  |
 | `/about`                          | About page                                        |
@@ -82,7 +82,44 @@ korrel-project/
 
 - **Before/After Slider** — drag to compare two images (home hero + wiki articles)
 - **Lightbox** — full-screen image viewer with pinch-to-zoom, pan, keyboard nav
-- **Image Comparison** — slider, overlay, and slideshow modes for wiki articles
+- **Image Comparison** — slider, overlay-switch, and slideshow modes for wiki articles
+
+---
+
+## Writing Wiki Articles
+
+The article editor (`Wiki Article` → *Body*) is a free sequence of blocks, so
+text and images can be interleaved in any order.
+
+| Block | What it does |
+| ----- | ------------ |
+| **Text**             | Headings (H2–H4), lists, quote, bold/italic/underline/strike/code/highlight, external + internal links |
+| **Image**            | One full-width image with its label and caption shown underneath |
+| **Image Group**      | 1–4 images per row. Pick the *Layout* (stacked, 2/3/4 across) and *Image framing* (whole image, or equal cropped tiles) |
+| **Image Comparison** | *Slider* (drag across 2 images), *Overlay* (any number of images stacked — big numbered buttons underneath switch between them), *Slideshow* (browse with prev/next, info shown underneath) |
+| **Callout**          | Highlighted Note / Tip / Warning box |
+
+### Image metadata & the comparison database
+
+Every image in an article body shares the same fields:
+
+- **Label** — short name shown under the image and on comparison buttons
+- **Caption** — longer description shown underneath
+- **Alt text** — for screen readers and search engines
+- **Include in comparison database** — turn on for genuine sample scans that
+  should be comparable across articles. Only then do the **taxonomy tags**
+  (lens, scanner, film stock, light source, …) appear — the same taxonomy the
+  Scan Gallery uses. Leave it off for product shots, screenshots and other
+  illustrative photos, which need no metadata.
+
+### Categories are optional
+
+`Categories` is a multi-select, so an article can appear under several
+equipment submenus — or under none at all. A standalone blog post (e.g. an
+RGB-scanning write-up) can simply be left uncategorised and featured via
+**Wiki Page → Selected Articles**, which renders it with its thumbnail at the
+top of `/wiki`. The legacy single-category field is kept read-only as a
+fallback so existing articles keep working.
 
 ---
 

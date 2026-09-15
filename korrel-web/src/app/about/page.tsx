@@ -2,6 +2,7 @@ import { PortableText } from "@portabletext/react";
 import { client } from "@/sanity/lib/client";
 import { ABOUT_PAGE_QUERY } from "@/sanity/lib/queries";
 import type { AboutPageData } from "@/sanity/types";
+import { PageContainer } from "@/components/PageContainer";
 
 export const metadata = {
   title: "About — Korrel",
@@ -9,22 +10,26 @@ export const metadata = {
 
 export const revalidate = 60;
 
+/**
+ * About page.
+ *
+ * The page title is intentionally not rendered — the nav already tells the
+ * reader where they are, and omitting it keeps the top of every page
+ * consistent. The `title` field is still used for the browser tab.
+ */
 export default async function AboutPage() {
   const data = await client.fetch<AboutPageData | null>(ABOUT_PAGE_QUERY);
 
-  const title = data?.title ?? "About";
   const hasBody = data?.body && data.body.length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-20 sm:px-8 sm:py-28">
-      <h1 className="text-3xl font-medium tracking-tight">{title}</h1>
-
+    <PageContainer width="narrow">
       {hasBody ? (
-        <div className="prose-korrel mt-8 flex flex-col gap-5 text-base leading-relaxed text-foreground">
+        <div className="prose-korrel flex flex-col gap-5 text-base leading-relaxed text-foreground">
           <PortableText value={data!.body as never[]} />
         </div>
       ) : (
-        <div className="mt-8 flex flex-col gap-5 text-base leading-relaxed text-foreground">
+        <div className="flex flex-col gap-5 text-base leading-relaxed text-foreground">
           <p>
             Korrel began as a personal project to bring old, damaged photo
             scans back to life — restoring color, removing scratches, and
@@ -42,6 +47,6 @@ export default async function AboutPage() {
           </p>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PortableText, type PortableTextComponents } from "@portabletext/react";
+import { PortableText } from "@portabletext/react";
 import { client } from "@/sanity/lib/client";
 import { WIKI_ARTICLE_QUERY } from "@/sanity/lib/queries";
 import {
@@ -8,17 +8,10 @@ import {
   WIKI_CATEGORY_SLUGS,
   type WikiArticle,
 } from "@/sanity/types";
-import { PortableTextImage } from "@/components/PortableTextImage";
-import { PortableTextComparison } from "@/components/PortableTextComparison";
+import { PageContainer } from "@/components/PageContainer";
+import { articleComponents } from "@/components/article/articleComponents";
 
 export const revalidate = 60;
-
-const components: PortableTextComponents = {
-  types: {
-    image: ({ value }) => <PortableTextImage value={value} />,
-    imageComparison: ({ value }) => <PortableTextComparison value={value} />,
-  },
-};
 
 export async function generateMetadata({
   params,
@@ -44,30 +37,46 @@ export default async function WikiArticlePage({
 
   if (!article) notFound();
 
-  const categorySlug = WIKI_CATEGORY_SLUGS[article.category];
-  const categoryLabel = WIKI_CATEGORY_LABELS[article.category] ?? article.category;
+  // Articles can now belong to several categories — or to none at all
+  // (a standalone blog post), in which case we link back to the Wiki root.
+  const primaryCategory = article.categories?.[0];
+  const categorySlug = primaryCategory
+    ? WIKI_CATEGORY_SLUGS[primaryCategory]
+    : undefined;
+  const categoryLabel = primaryCategory
+    ? (WIKI_CATEGORY_LABELS[primaryCategory] ?? primaryCategory)
+    : "Wiki";
 
   return (
-    <article className="mx-auto w-full max-w-3xl px-6 py-20 sm:px-8 sm:py-28">
-      {/* Back link */}
-      <Link
-        href={categorySlug ? `/wiki/category/${categorySlug}` : "/wiki"}
-        className="inline-flex items-center gap-1 text-xs tracking-wide text-muted uppercase transition-colors hover:text-foreground"
-      >
-        ← {categoryLabel}
-      </Link>
+    <PageContainer width="article">
+      <article>
+        {/* Back link */}
+        <Link
+          href={categorySlug ? `/wiki/category/${categorySlug}` : "/wiki"}
+          className="inline-flex items-center gap-1 text-xs tracking-wide text-muted uppercase transition-colors hover:text-foreground"
+        >
+          ← {categoryLabel}
+        </Link>
 
-      <h1 className="mt-3 text-3xl font-medium tracking-tight">
-        {article.title}
-      </h1>
-      <div className="prose-korrel mt-10 text-base leading-relaxed text-foreground">
-        {article.body ? (
-          <PortableText
-            value={article.body as never}
-            components={components}
-          />
-        ) : null}
-      </div>
-    </article>
+        <h1 className="mt-3 text-3xl font-medium tracking-tight">
+          {article.title}
+        </h1>
+
+        {article.excerpt && (
+          <p className="mt-4 text-base leading-relaxed text-muted">
+            {article.excerpt}
+          </p>
+        )}
+
+        <div className="prose-korrel mt-10 text-base leading-relaxed text-foreground">
+          {article.body ? (
+            <PortableText
+              value={article.body as never}
+              components={articleComponents}
+            />
+          ) : null}
+        </div>
+      </article>
+    </PageContainer>
   );
 }

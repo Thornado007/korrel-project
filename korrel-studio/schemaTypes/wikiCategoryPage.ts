@@ -38,6 +38,20 @@ export const wikiCategoryPage = defineType({
       type: 'text',
       rows: 2,
     }),
+    defineField({
+      name: 'orderRank',
+      title: 'Order',
+      type: 'number',
+      description: 'Lower numbers appear first in the category list on the Wiki page.',
+      initialValue: 0,
+    }),
+  ],
+  orderings: [
+    {
+      title: 'Order',
+      name: 'orderAsc',
+      by: [{field: 'orderRank', direction: 'asc'}],
+    },
   ],
   preview: {
     select: {

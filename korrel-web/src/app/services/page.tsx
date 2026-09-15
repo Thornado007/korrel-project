@@ -16,6 +16,7 @@ import type {
   ScanningServiceData,
   SanityImageValue,
 } from "@/sanity/types";
+import { PageContainer } from "@/components/PageContainer";
 
 export const metadata = {
   title: "Service — Korrel",
@@ -63,7 +64,7 @@ export default async function ServicePage() {
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-10 sm:px-8 sm:py-16">
+    <PageContainer width="wide">
       {/* Intro text from the servicePage singleton */}
       {pageData?.body && pageData.body.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-border p-6 sm:p-8">
@@ -377,6 +378,6 @@ export default async function ServicePage() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

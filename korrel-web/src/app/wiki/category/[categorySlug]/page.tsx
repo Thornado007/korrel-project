@@ -9,6 +9,7 @@ import {
   WIKI_SLUG_TO_CATEGORY,
   type WikiArticleListItem,
 } from "@/sanity/types";
+import { PageContainer } from "@/components/PageContainer";
 
 export const revalidate = 60;
 
@@ -43,7 +44,7 @@ export default async function WikiCategoryPage({
   );
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:px-8 sm:py-28">
+    <PageContainer>
       <Link
         href="/wiki"
         className="text-xs tracking-wide text-muted uppercase transition-colors hover:text-foreground"
@@ -55,11 +56,11 @@ export default async function WikiCategoryPage({
       </h1>
 
       {articles.length === 0 ? (
-        <p className="mt-16 text-sm text-muted">
+        <p className="mt-10 text-sm text-muted">
           No articles have been published in this category yet.
         </p>
       ) : (
-        <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => (
             <Link
               key={article._id}
@@ -92,13 +93,20 @@ export default async function WikiCategoryPage({
                 <div className="aspect-[4/3] w-full rounded-md bg-[#f2f0ec]" />
               )}
 
-              <span className="text-base font-medium leading-snug transition-colors group-hover:text-muted">
-                {article.title}
-              </span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-base font-medium leading-snug transition-colors group-hover:text-muted">
+                  {article.title}
+                </span>
+                {article.excerpt && (
+                  <span className="text-sm leading-relaxed text-muted">
+                    {article.excerpt}
+                  </span>
+                )}
+              </div>
             </Link>
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

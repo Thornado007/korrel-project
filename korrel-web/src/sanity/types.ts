@@ -74,39 +74,87 @@ export interface WikiCategoryPageData {
 }
 
 /* ------------------------------------------------------------------
+   Wiki Page (singleton) — "Selected articles" + category list
+   ------------------------------------------------------------------ */
+
+export interface WikiPageData {
+  _id: string;
+  selectedTitle?: string;
+  selectedArticles?: WikiArticleListItem[];
+  selectedLayout?: "feature" | "grid";
+  categoriesTitle?: string;
+}
+
+/* ------------------------------------------------------------------
    Wiki Articles
    ------------------------------------------------------------------ */
 
 export interface WikiArticleListItem {
   _id: string;
   title: string;
-  category: string;
+  /**
+   * Resolved category list. The query coalesces the new multi-select
+   * `categories` field with the legacy single `category` field, so
+   * previously published articles keep working.
+   */
+  categories?: string[];
   slug: string;
+  excerpt?: string;
   thumbnailImage?: SanityImageValue;
 }
 
-/** An image embedded inline in a Wiki article's Portable Text body. */
-export interface WikiInlineImage extends SanityImageValue {
-  _type: "image";
-  _key: string;
-  alt?: string;
-  tags?: Tag[];
-}
-
-/** A single image inside an imageComparison block. */
-export interface ComparisonImageItem extends SanityImageValue {
+/**
+ * Shared metadata attached to every image inside an article body —
+ * matches `articleImageFields` in the Studio schema.
+ */
+export interface ArticleImage extends SanityImageValue {
   _key: string;
   label?: string;
+  caption?: string;
+  alt?: string;
+  /** Whether this image belongs to the cross-article comparison database. */
+  includeInComparisons?: boolean;
   tags?: Tag[];
 }
 
-/** An image-comparison block inside a Wiki article's Portable Text body. */
+/** A single full-width image block in an article body. */
+export interface ArticleImageBlock extends ArticleImage {
+  _type: "image";
+}
+
+/** Several images shown together with a chosen layout. */
+export interface ImageGroupBlock {
+  _type: "imageGroup";
+  _key: string;
+  layout?: "stacked" | "two" | "three" | "four";
+  fit?: "contain" | "cover";
+  images?: ArticleImage[];
+  caption?: string;
+}
+
+/**
+ * Backwards-compatible alias — comparison images use the same metadata
+ * shape as every other article image.
+ */
+export type ComparisonImageItem = ArticleImage;
+
+/** An image-comparison block inside an article body. */
 export interface ImageComparison {
   _type: "imageComparison";
   _key: string;
   comparisonType: "slider" | "overlay" | "slideshow";
   images: ComparisonImageItem[];
+  showLabelsUnderneath?: boolean;
   caption?: string;
+}
+
+/** A highlighted note box inside an article body. */
+export interface CalloutBlock {
+  _type: "callout";
+  _key: string;
+  tone?: "note" | "tip" | "warning";
+  title?: string;
+  text: string;
 }
 
 export interface WikiArticle extends WikiArticleListItem {

@@ -84,9 +84,12 @@ export function GalleryGrid({
 
   return (
     <>
-      {/* ---- Filter UI ---- */}
+      {/* ---- Filter UI ----
+          No top margin: the page container already provides the spacing
+          below the header, so the filters sit flush with every other
+          page's first element. */}
       {hasFilters && (
-        <div className="mt-10 flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           {filters.map((category) => (
             <div
               key={category._id}
@@ -125,13 +128,13 @@ export function GalleryGrid({
 
       {/* ---- Masonry grid ---- */}
       {filteredItems.length === 0 ? (
-        <p className="mt-16 text-sm text-muted">
+        <p className={`text-sm text-muted ${hasFilters ? "mt-10" : ""}`}>
           {selectedTags.size > 0
             ? "No scans match the selected filters."
             : "No scans have been published yet."}
         </p>
       ) : (
-        <div className="masonry mt-10">
+        <div className={`masonry ${hasFilters ? "mt-8" : ""}`}>
           {filteredItems.map((item, index) => (
             <figure key={item._id} className="masonry-item">
               <button

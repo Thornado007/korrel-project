@@ -1,11 +1,12 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
 import {DocumentTextIcon} from '@sanity/icons/DocumentText'
-import {ImagesIcon} from '@sanity/icons/Images'
 
 /**
  * Equipment/organization categories for Wiki articles.
- * Every article must be filed under exactly one of these so the
- * Wiki stays organized by gear type rather than loose free-text tags.
+ *
+ * Categories are now optional and multi-select: an article can sit in
+ * several category submenus, or in none at all when it is simply a blog
+ * post that only needs to be featured under "Selected articles".
  */
 export const WIKI_CATEGORIES = [
   {title: 'Lens', value: 'lens'},
@@ -20,17 +21,23 @@ export const wikiArticle = defineType({
   title: 'Wiki Article',
   type: 'document',
   icon: DocumentTextIcon,
+  groups: [
+    {name: 'content', title: 'Content', default: true},
+    {name: 'settings', title: 'Settings'},
+  ],
   fields: [
     defineField({
       name: 'title',
       title: 'Title',
       type: 'string',
+      group: 'content',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
+      group: 'settings',
       options: {
         source: 'title',
         maxLength: 96,
@@ -38,173 +45,80 @@ export const wikiArticle = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'category',
-      title: 'Category',
-      description: 'Every article must be categorized under one equipment type.',
-      type: 'string',
+      name: 'categories',
+      title: 'Categories',
+      description:
+        'Optional. Choose one or more equipment categories this article should appear under. Leave empty for a standalone blog post — feature it via the Wiki Page instead.',
+      type: 'array',
+      group: 'settings',
+      of: [defineArrayMember({type: 'string'})],
       options: {
         list: WIKI_CATEGORIES,
-        layout: 'radio',
+        layout: 'grid',
       },
-      validation: (Rule) => Rule.required(),
+    }),
+    /**
+     * Legacy single-category field. Kept (read-only) so previously
+     * published articles keep working and can be migrated at leisure —
+     * the frontend falls back to it when `categories` is empty.
+     */
+    defineField({
+      name: 'category',
+      title: 'Category (legacy)',
+      description:
+        'Replaced by the multi-select "Categories" field above. Still used as a fallback when Categories is empty.',
+      type: 'string',
+      group: 'settings',
+      readOnly: true,
+      hidden: ({value}) => !value,
+      options: {
+        list: WIKI_CATEGORIES,
+      },
     }),
     defineField({
       name: 'thumbnailImage',
       title: 'Thumbnail Image',
-      description: 'Shown in article listings (e.g. the category page). Optional.',
+      description:
+        'Shown in article listings — the Wiki "Selected articles" section and the category pages.',
       type: 'image',
+      group: 'content',
       options: {hotspot: true},
+    }),
+    defineField({
+      name: 'excerpt',
+      title: 'Excerpt',
+      description: 'Short summary shown under the title in listings. Optional.',
+      type: 'text',
+      rows: 3,
+      group: 'content',
     }),
     defineField({
       name: 'body',
       title: 'Body',
-      type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'block',
-          styles: [
-            {title: 'Normal', value: 'normal'},
-            {title: 'H2', value: 'h2'},
-            {title: 'H3', value: 'h3'},
-            {title: 'Quote', value: 'blockquote'},
-          ],
-          lists: [
-            {title: 'Bulleted', value: 'bullet'},
-            {title: 'Numbered', value: 'number'},
-          ],
-          marks: {
-            decorators: [
-              {title: 'Bold', value: 'strong'},
-              {title: 'Italic', value: 'em'},
-            ],
-            annotations: [
-              defineArrayMember({
-                type: 'object',
-                name: 'link',
-                title: 'Link',
-                fields: [
-                  defineField({
-                    name: 'href',
-                    title: 'URL',
-                    type: 'url',
-                    validation: (Rule) =>
-                      Rule.uri({scheme: ['http', 'https', 'mailto', 'tel']}),
-                  }),
-                ],
-              }),
-            ],
-          },
-        }),
-        defineArrayMember({
-          type: 'image',
-          options: {hotspot: true},
-          fields: [
-            defineField({
-              name: 'tags',
-              title: 'Tags',
-              description:
-                'Technical tags associated with this image (lens, scanner, film stock, etc.)',
-              type: 'array',
-              of: [defineArrayMember({type: 'reference', to: [{type: 'tag'}]})],
-              options: {layout: 'tags'},
-            }),
-            defineField({
-              name: 'alt',
-              title: 'Alt text',
-              type: 'string',
-            }),
-          ],
-        }),
-        defineArrayMember({
-          type: 'object',
-          name: 'imageComparison',
-          title: 'Image Comparison',
-          icon: ImagesIcon,
-          fields: [
-            defineField({
-              name: 'comparisonType',
-              title: 'Comparison Method',
-              description: 'Choose how the images are compared.',
-              type: 'string',
-              options: {
-                list: [
-                  {title: 'Slider — drag to compare two images', value: 'slider'},
-                  {title: 'Overlay — click to toggle between images', value: 'overlay'},
-                  {title: 'Slideshow — use arrows to browse images', value: 'slideshow'},
-                ],
-                layout: 'radio',
-              },
-              initialValue: 'slider',
-              validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'images',
-              title: 'Images',
-              description: 'Add 2 images for Slider/Overlay, or 2+ for Slideshow.',
-              type: 'array',
-              of: [
-                defineArrayMember({
-                  type: 'image',
-                  options: {hotspot: true},
-                  fields: [
-                    defineField({
-                      name: 'label',
-                      title: 'Label',
-                      type: 'string',
-                      description: 'Short label, e.g. "Before", "After", or a lens name.',
-                    }),
-                    defineField({
-                      name: 'tags',
-                      title: 'Tags',
-                      description:
-                        'Technical tags for this comparison image (e.g. lens, film stock).',
-                      type: 'array',
-                      of: [defineArrayMember({type: 'reference', to: [{type: 'tag'}]})],
-                      options: {layout: 'tags'},
-                    }),
-                  ],
-                }),
-              ],
-              validation: (Rule) => Rule.min(2).error('At least 2 images are required.'),
-            }),
-            defineField({
-              name: 'caption',
-              title: 'Caption',
-              type: 'string',
-            }),
-          ],
-          preview: {
-            select: {
-              comparisonType: 'comparisonType',
-              caption: 'caption',
-              media: 'images.0',
-            },
-            prepare({comparisonType, caption, media}) {
-              const labels: Record<string, string> = {
-                slider: 'Slider',
-                overlay: 'Overlay Toggle',
-                slideshow: 'Slideshow',
-              }
-              return {
-                title: caption || 'Image Comparison',
-                subtitle: labels[comparisonType as string] || 'Comparison',
-                media,
-              }
-            },
-          },
-        }),
-      ],
+      description:
+        'Mix text, image groups and comparisons in any order. Use "Image Group" for images side by side, and "Image Comparison" for slider / overlay / slideshow comparisons.',
+      type: 'articleBody',
+      group: 'content',
     }),
   ],
   preview: {
     select: {
       title: 'title',
-      subtitle: 'category',
+      categories: 'categories',
+      legacyCategory: 'category',
       media: 'thumbnailImage',
     },
-    prepare({title, subtitle, media}) {
-      const label = WIKI_CATEGORIES.find((c) => c.value === subtitle)?.title ?? subtitle
-      return {title, subtitle: label, media}
+    prepare({title, categories, legacyCategory, media}) {
+      const values: string[] =
+        Array.isArray(categories) && categories.length > 0
+          ? categories
+          : legacyCategory
+            ? [legacyCategory]
+            : []
+      const labels = values
+        .map((value) => WIKI_CATEGORIES.find((c) => c.value === value)?.title ?? value)
+        .join(', ')
+      return {title, subtitle: labels || 'No category', media}
     },
   },
 })
